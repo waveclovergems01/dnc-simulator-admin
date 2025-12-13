@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.dnc.simulator.controller")
+@ComponentScan("com.dnc.simulator")
 public class WebConfig {
 
 	@Bean
