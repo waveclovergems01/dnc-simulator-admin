@@ -1,15 +1,21 @@
 package com.dnc.simulator.repository;
 
+import com.dnc.simulator.model.Job;
 import java.util.List;
 
-import com.dnc.simulator.model.Job;
-
 public interface JobRepository {
-	List<Job> findAll();
 
-	Job findById(int id);
+	List<Job> getAllJobs();
 
-	void insert(Job job);
+	Job getJobById(Integer id);
 
-	void delete(int id);
+	List<Integer> getNextClassIds(Integer jobId);
+
+	void saveJob(Job job);
+
+	void deleteNextClasses(Integer jobId);
+
+	void insertNextClass(Integer jobId, Integer nextClassId);
+
+	void deleteJob(Integer id);
 }

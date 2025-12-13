@@ -1,40 +1,55 @@
 package com.dnc.simulator.service;
 
-import java.util.List;
-
+import com.dnc.simulator.model.Job;
+import com.dnc.simulator.repository.JobRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dnc.simulator.model.Job;
-import com.dnc.simulator.repository.JobRepository;
+import java.util.List;
 
 @Service
-@Transactional
 public class JobServiceImpl implements JobService {
 
-	private final JobRepository jobRepository;
-
-	public JobServiceImpl(JobRepository jobRepository) {
-		this.jobRepository = jobRepository;
-	}
+	@Autowired
+	private JobRepository jobRepository;
 
 	@Override
 	public List<Job> getAllJobs() {
-		return jobRepository.findAll();
+		return jobRepository.getAllJobs();
 	}
 
 	@Override
-	public Job getById(int id) {
-		return jobRepository.findById(id);
+	public Job getJobById(Integer id) {
+		return jobRepository.getJobById(id);
 	}
 
 	@Override
-	public void insert(Job job) {
-		jobRepository.insert(job);
+	public List<Integer> getNextClassIds(Integer jobId) {
+		return jobRepository.getNextClassIds(jobId);
 	}
 
 	@Override
-	public void delete(int id) {
-		jobRepository.delete(id);
+	@Transactional
+	public void saveJob(Job job, List<Integer> nextClassIds) {
+
+		jobRepository.saveJob(job);
+
+		if (job.getId() != null) {
+			jobRepository.deleteNextClasses(job.getId());
+
+			if (nextClassIds != null) {
+				for (Integer nextId : nextClassIds) {
+					if (!nextId.equals(job.getId())) {
+						jobRepository.insertNextClass(job.getId(), nextId);
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public void deleteJob(Integer id) {
+		jobRepository.deleteJob(id);
 	}
 }

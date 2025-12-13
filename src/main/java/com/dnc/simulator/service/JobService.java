@@ -1,15 +1,17 @@
 package com.dnc.simulator.service;
 
+import com.dnc.simulator.model.Job;
 import java.util.List;
 
-import com.dnc.simulator.model.Job;
-
 public interface JobService {
+
 	List<Job> getAllJobs();
 
-	Job getById(int id);
+	Job getJobById(Integer id);
 
-	void insert(Job job);
+	List<Integer> getNextClassIds(Integer jobId);
 
-	void delete(int id);
+	void saveJob(Job job, List<Integer> nextClassIds);
+
+	void deleteJob(Integer id);
 }

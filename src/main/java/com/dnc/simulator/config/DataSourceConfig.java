@@ -1,30 +1,79 @@
 package com.dnc.simulator.config;
 
-import java.io.IOException;
-
-import javax.sql.DataSource;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.sqlite.SQLiteDataSource;
+
+import javax.sql.DataSource;
+import java.io.File;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.Properties;
 
 @Configuration
 public class DataSourceConfig {
 
+	private static final String PROP_FILE = "dnc-dev.properties";
+	private static final String DB_PATH_KEY = "db.path";
+
 	@Bean
-	public DataSource dataSource() throws IOException {
+	public DataSource dataSource() {
 
-		ClassPathResource resource = new ClassPathResource("database/dnc-simulator.db");
+		try {
+			// ===============================
+			// 1. Load properties from classpath
+			// ===============================
+			Properties p = new Properties();
+			try (InputStream is = getClass().getClassLoader().getResourceAsStream(PROP_FILE)) {
 
-		String dbPath = resource.getFile().getAbsolutePath();
+				if (is == null) {
+					throw new RuntimeException("Cannot find " + PROP_FILE + " in classpath (src/main/resources)");
+				}
+				p.load(is);
+			}
 
-		DriverManagerDataSource ds = new DriverManagerDataSource();
-		ds.setDriverClassName("org.sqlite.JDBC");
-		ds.setUrl("jdbc:sqlite:" + dbPath);
+			String dbPath = p.getProperty(DB_PATH_KEY);
+			if (dbPath == null || dbPath.trim().isEmpty()) {
+				throw new RuntimeException("Missing '" + DB_PATH_KEY + "' in " + PROP_FILE);
+			}
 
-		return ds;
+			// ===============================
+			// 2. Resolve DB file (filesystem)
+			// ===============================
+			File dbFile = new File(dbPath);
+
+			if (!dbFile.getParentFile().exists()) {
+				dbFile.getParentFile().mkdirs();
+			}
+
+			String jdbcUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
+			System.out.println("[SQLite] PROPERTIES = classpath:" + PROP_FILE);
+			System.out.println("[SQLite] DB         = " + jdbcUrl);
+
+			// ===============================
+			// 3. Create DataSource
+			// ===============================
+			SQLiteDataSource ds = new SQLiteDataSource();
+			ds.setUrl(jdbcUrl);
+
+			// ===============================
+			// 4. Init SQLite PRAGMA
+			// ===============================
+			try (Connection conn = ds.getConnection(); Statement stmt = conn.createStatement()) {
+
+				stmt.execute("PRAGMA foreign_keys = ON");
+				stmt.execute("PRAGMA journal_mode = WAL");
+				stmt.execute("PRAGMA busy_timeout = 5000");
+			}
+
+			return ds;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Failed to init SQLite DB", e);
+		}
 	}
 
 	@Bean

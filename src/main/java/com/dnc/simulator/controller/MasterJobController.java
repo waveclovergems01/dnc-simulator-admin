@@ -12,11 +12,11 @@ import com.dnc.simulator.model.Job;
 import com.dnc.simulator.service.JobService;
 
 @Controller
-public class MasterDataController {
+public class MasterJobController {
 
 	private final JobService jobService;
 
-	public MasterDataController(JobService jobService) {
+	public MasterJobController(JobService jobService) {
 		this.jobService = jobService;
 	}
 
@@ -45,6 +45,35 @@ public class MasterDataController {
 		model.addAttribute("job", new Job());
 		model.addAttribute("allJobs", jobService.getAllJobs());
 
+		// สำหรับ checkbox next classes
+		model.addAttribute("nextClassIds", null);
+
+		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/job-form.jsp");
+		model.addAttribute("activeMenuGroup", "master");
+		model.addAttribute("activeMenu", "jobs");
+		model.addAttribute("isAdd", true);
+
+		return "layout/main";
+	}
+
+	/*
+	 * ========================= EDIT FORM =========================
+	 */
+	@GetMapping("/master/jobs/edit")
+	public String editJobForm(@RequestParam int id, Model model) {
+
+		Job job = jobService.getJobById(id);
+		if (job == null) {
+			return "redirect:/master/jobs";
+		}
+
+		List<Integer> nextClassIds = jobService.getNextClassIds(id);
+
+		model.addAttribute("job", job);
+		model.addAttribute("allJobs", jobService.getAllJobs());
+		model.addAttribute("nextClassIds", nextClassIds);
+		model.addAttribute("isAdd", false);
+
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/job-form.jsp");
 		model.addAttribute("activeMenuGroup", "master");
 		model.addAttribute("activeMenu", "jobs");
@@ -53,12 +82,13 @@ public class MasterDataController {
 	}
 
 	/*
-	 * ========================= SAVE (INSERT) =========================
+	 * ========================= SAVE (INSERT / UPDATE) =========================
 	 */
 	@PostMapping("/master/jobs/save")
-	public String saveJob(@RequestParam Integer id, @RequestParam String name, @RequestParam int classId,
-			@RequestParam String className, @RequestParam int inherit, @RequestParam int requiredLevel,
-			@RequestParam(required = false) List<Integer> nextClassIds) {
+	public String saveJob(@RequestParam(required = false) Integer id, @RequestParam String name,
+			@RequestParam int classId, @RequestParam String className, @RequestParam int inherit,
+			@RequestParam int requiredLevel, @RequestParam(required = false) List<Integer> nextClassIds,
+			@RequestParam boolean isAdd) {
 
 		Job job = new Job();
 		job.setId(id);
@@ -67,12 +97,11 @@ public class MasterDataController {
 		job.setClassName(className);
 		job.setInherit(inherit);
 		job.setRequiredLevel(requiredLevel);
+		job.setIsAdd(isAdd);
 
-		if (nextClassIds != null) {
-			job.setNextClassIds(nextClassIds);
-		}
+		// ส่ง nextClassIds ลง service โดยตรง (ไม่ยัดใน model)
+		jobService.saveJob(job, nextClassIds);
 
-		jobService.insert(job);
 		return "redirect:/master/jobs";
 	}
 
@@ -81,22 +110,22 @@ public class MasterDataController {
 	 */
 	@PostMapping("/master/jobs/delete")
 	public String deleteJob(@RequestParam int id) {
-		jobService.delete(id);
+		jobService.deleteJob(id);
 		return "redirect:/master/jobs";
 	}
 
 	/*
 	 * ========================================================= OTHER MASTER PAGES
-	 * (STATIC FOR NOW) =========================================================
+	 * (STATIC) =========================================================
 	 */
 
-	@GetMapping("/master/items")
-	public String items(Model model) {
-		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/items.jsp");
-		model.addAttribute("activeMenuGroup", "master");
-		model.addAttribute("activeMenu", "items");
-		return "layout/main";
-	}
+//	@GetMapping("/master/items")
+//	public String items(Model model) {
+//		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/items.jsp");
+//		model.addAttribute("activeMenuGroup", "master");
+//		model.addAttribute("activeMenu", "items");
+//		return "layout/main";
+//	}
 
 	@GetMapping("/master/stats")
 	public String stats(Model model) {

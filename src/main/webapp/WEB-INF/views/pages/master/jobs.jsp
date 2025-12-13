@@ -37,7 +37,7 @@
 				<td>${job.requiredLevel}</td>
 				<td class="text-center">
 					<!-- Edit --> <a
-					href="${pageContext.request.contextPath}/master/jobs/edit/${job.id}"
+					href="${pageContext.request.contextPath}/master/jobs/edit?id=${job.id}"
 					class="btn btn-sm btn-warning me-1"> Edit </a> <!-- Delete (POST) -->
 					<form
 						action="${pageContext.request.contextPath}/master/jobs/delete"

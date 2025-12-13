@@ -13,6 +13,8 @@ public class Job {
 	private int requiredLevel;
 
 	private List<Integer> nextClassIds = new ArrayList<>();
+	
+	private Boolean isAdd;
 
 	// getters / setters
 	public Integer getId() {
@@ -70,4 +72,13 @@ public class Job {
 	public void setNextClassIds(List<Integer> nextClassIds) {
 		this.nextClassIds = nextClassIds;
 	}
+
+	public Boolean getIsAdd() {
+		return isAdd;
+	}
+
+	public void setIsAdd(Boolean isAdd) {
+		this.isAdd = isAdd;
+	}
+	
 }
