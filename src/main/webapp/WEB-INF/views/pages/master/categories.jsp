@@ -7,51 +7,43 @@
 
 <!-- ================= Page Header ================= -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-	<h2 class="mb-0">Master Stats</h2>
+	<h2 class="mb-0">Master Categories</h2>
 
 	<!-- Add -->
-	<a href="${pageContext.request.contextPath}/master/stats/add"
-		class="btn btn-primary"> + Add Stat </a>
+	<a href="${pageContext.request.contextPath}/master/categories/add"
+		class="btn btn-primary"> + Add Category </a>
 </div>
 
-<!-- ================= Stats Table ================= -->
-<table id="statsTable"
+<!-- ================= Categories Table ================= -->
+<table id="categoriesTable"
 	class="table table-striped table-hover shadow-sm w-100">
 	<thead class="table-dark">
 		<tr>
-			<th>ID</th>
-			<th>Stat Name</th>
-			<th>Display Name</th>
-			<th>Category</th>
-			<th>%</th>
+			<th style="width: 120px;">ID</th>
+			<th>Name</th>
 			<th style="width: 180px;">Action</th>
 		</tr>
 	</thead>
 	<tbody>
-		<c:forEach items="${stats}" var="s">
+		<c:forEach items="${categories}" var="category">
 			<tr>
-				<td>${s.statId}</td>
-				<td>${s.statName}</td>
-				<td>${s.displayName}</td>
-				<td>${s.statCatName}</td>
-				<td class="text-center"><c:choose>
-						<c:when test="${s.percentage}">%</c:when>
-						<c:otherwise>-</c:otherwise>
-					</c:choose></td>
+				<td>${category.categoryId}</td>
+				<td>${category.categoryName}</td>
 				<td class="text-center">
 					<!-- Edit --> <a
-					href="${pageContext.request.contextPath}/master/stats/edit?id=${s.statId}"
+					href="${pageContext.request.contextPath}/master/categories/edit?id=${category.categoryId}"
 					class="btn btn-sm btn-warning me-1"> Edit </a> <!-- Delete -->
 					<form
-						action="${pageContext.request.contextPath}/master/stats/delete"
+						action="${pageContext.request.contextPath}/master/categories/delete"
 						method="post" style="display: inline;"
-						onsubmit="return confirm('Are you sure you want to delete this stat?');">
+						onsubmit="return confirm('Are you sure you want to delete this category?');">
 
-						<input type="hidden" name="id" value="${s.statId}" />
+						<input type="hidden" name="id" value="${category.categoryId}" />
 
 						<button type="submit" class="btn btn-sm btn-danger">
 							Delete</button>
 					</form>
+
 				</td>
 			</tr>
 		</c:forEach>
@@ -71,7 +63,7 @@
 
 <script>
 	$(document).ready(function() {
-		$('#statsTable').DataTable({
+		$('#categoriesTable').DataTable({
 			pageLength : 10,
 			lengthChange : false,
 			ordering : true,
@@ -79,7 +71,7 @@
 			info : true,
 			columnDefs : [ {
 				orderable : false,
-				targets : 5
+				targets : 2
 			// Action column
 			} ]
 		});

@@ -27,19 +27,34 @@
 						href="${pageContext.request.contextPath}/master/jobs"> Jobs </a></li>
 
 					<li><a
+						class="nav-link ${activeMenu == 'categories' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/categories">
+							Categories </a></li>
+
+					<li><a
 						class="nav-link ${activeMenu == 'items' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/items"> Items
-					</a></li>
+							Type </a></li>
 
 					<li><a
 						class="nav-link ${activeMenu == 'stats' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/stats"> Stats
 					</a></li>
+					
+					<li><a
+						class="nav-link ${activeMenu == 'equipment' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/equipment"> Equipment Item
+					</a></li>
 
 					<li><a
 						class="nav-link ${activeMenu == 'rarity' ? 'active' : ''}"
-						href="${pageContext.request.contextPath}/master/rarity">
-							rarity </a></li>
+						href="${pageContext.request.contextPath}/master/rarities">
+							Rarity </a></li>
+
+					<li><a
+						class="nav-link ${activeMenu == 'suffix' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/suffix">
+							Suffix </a></li>
 
 					<li><a
 						class="nav-link ${activeMenu == 'set-bonus' ? 'active' : ''}"

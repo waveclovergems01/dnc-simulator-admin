@@ -7,63 +7,56 @@
 
 <!-- ================= Page Header ================= -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-	<h2 class="mb-0">Master Stats</h2>
+	<h2 class="mb-0">Master Equipment Items</h2>
 
-	<!-- Add -->
-	<a href="${pageContext.request.contextPath}/master/stats/add"
-		class="btn btn-primary"> + Add Stat </a>
+	<a href="${pageContext.request.contextPath}/master/equipment/add"
+		class="btn btn-primary"> + Add Equipment </a>
 </div>
 
-<!-- ================= Stats Table ================= -->
-<table id="statsTable"
+<!-- ================= Equipment Table ================= -->
+<table id="equipmentTable"
 	class="table table-striped table-hover shadow-sm w-100">
 	<thead class="table-dark">
 		<tr>
-			<th>ID</th>
-			<th>Stat Name</th>
-			<th>Display Name</th>
-			<th>Category</th>
-			<th>%</th>
+			<th>Item ID</th>
+			<th>Name</th>
+			<th>Type ID</th>
+			<th>Job ID</th>
+			<th>Req Lv</th>
+			<th>Rarity</th>
+			<th>Durability</th>
 			<th style="width: 180px;">Action</th>
 		</tr>
 	</thead>
 	<tbody>
-		<c:forEach items="${stats}" var="s">
+		<c:forEach items="${items}" var="e">
 			<tr>
-				<td>${s.statId}</td>
-				<td>${s.statName}</td>
-				<td>${s.displayName}</td>
-				<td>${s.statCatName}</td>
-				<td class="text-center"><c:choose>
-						<c:when test="${s.percentage}">%</c:when>
-						<c:otherwise>-</c:otherwise>
-					</c:choose></td>
-				<td class="text-center">
-					<!-- Edit --> <a
-					href="${pageContext.request.contextPath}/master/stats/edit?id=${s.statId}"
-					class="btn btn-sm btn-warning me-1"> Edit </a> <!-- Delete -->
+				<td>${e.itemId}</td>
+				<td>${e.name}</td>
+				<td>${e.typeId}</td>
+				<td>${e.jobId}</td>
+				<td>${e.requiredLevel}</td>
+				<td>${e.rarityId}</td>
+				<td>${e.durability}</td>
+				<td class="text-center"><a
+					href="${pageContext.request.contextPath}/master/equipment/edit?itemId=${e.itemId}"
+					class="btn btn-sm btn-warning me-1"> Edit </a>
+
 					<form
-						action="${pageContext.request.contextPath}/master/stats/delete"
+						action="${pageContext.request.contextPath}/master/equipment/delete"
 						method="post" style="display: inline;"
-						onsubmit="return confirm('Are you sure you want to delete this stat?');">
-
-						<input type="hidden" name="id" value="${s.statId}" />
-
+						onsubmit="return confirm('Delete this equipment item?');">
+						<input type="hidden" name="itemId" value="${e.itemId}" />
 						<button type="submit" class="btn btn-sm btn-danger">
 							Delete</button>
-					</form>
-				</td>
+					</form></td>
 			</tr>
 		</c:forEach>
 	</tbody>
 </table>
 
 <!-- ================= JS ================= -->
-
-<!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<!-- DataTables JS -->
 <script
 	src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 <script
@@ -71,16 +64,14 @@
 
 <script>
 	$(document).ready(function() {
-		$('#statsTable').DataTable({
+		$('#equipmentTable').DataTable({
 			pageLength : 10,
 			lengthChange : false,
-			ordering : true,
 			searching : true,
-			info : true,
+			ordering : true,
 			columnDefs : [ {
 				orderable : false,
-				targets : 5
-			// Action column
+				targets : 7
 			} ]
 		});
 	});

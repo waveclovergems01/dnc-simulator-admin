@@ -9,15 +9,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.dnc.simulator.model.ItemType;
+import com.dnc.simulator.service.CategoryService;
 import com.dnc.simulator.service.ItemTypeService;
 
 @Controller
 public class MasterItemTypeController {
 
 	private final ItemTypeService itemTypeService;
+	private final CategoryService categoryService;
 
-	public MasterItemTypeController(ItemTypeService itemTypeService) {
+	public MasterItemTypeController(ItemTypeService itemTypeService, CategoryService categoryService) {
+
 		this.itemTypeService = itemTypeService;
+		this.categoryService = categoryService;
 	}
 
 	/*
@@ -43,6 +47,7 @@ public class MasterItemTypeController {
 	public String addItemForm(Model model) {
 
 		model.addAttribute("itemType", new ItemType());
+		model.addAttribute("categories", categoryService.getAllCategories());
 		model.addAttribute("isAdd", true);
 
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/item-form.jsp");
@@ -64,6 +69,7 @@ public class MasterItemTypeController {
 		}
 
 		model.addAttribute("itemType", itemType);
+		model.addAttribute("categories", categoryService.getAllCategories());
 		model.addAttribute("isAdd", false);
 
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/item-form.jsp");

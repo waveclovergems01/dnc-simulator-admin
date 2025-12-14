@@ -7,10 +7,10 @@ public class Job {
 
 	private Integer id;
 	private String name;
-	private int classId;
+	private Integer classId;
 	private String className;
-	private int inherit;
-	private int requiredLevel;
+	private Integer inherit;
+	private Integer requiredLevel;
 
 	private List<Integer> nextClassIds = new ArrayList<>();
 	
@@ -33,7 +33,7 @@ public class Job {
 		this.name = name;
 	}
 
-	public int getClassId() {
+	public Integer getClassId() {
 		return classId;
 	}
 
@@ -49,7 +49,7 @@ public class Job {
 		this.className = className;
 	}
 
-	public int getInherit() {
+	public Integer getInherit() {
 		return inherit;
 	}
 
@@ -57,7 +57,7 @@ public class Job {
 		this.inherit = inherit;
 	}
 
-	public int getRequiredLevel() {
+	public Integer getRequiredLevel() {
 		return requiredLevel;
 	}
 

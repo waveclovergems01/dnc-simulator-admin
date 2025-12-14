@@ -50,12 +50,22 @@
 					</div>
 				</div>
 
-				<!-- CATEGORY -->
+				<!-- CATEGORY (DROPDOWN) -->
 				<div class="mb-3 row">
-					<label class="col-sm-2 col-form-label">Category ID</label>
+					<label class="col-sm-2 col-form-label">Category</label>
 					<div class="col-sm-4">
-						<input type="number" name="categoryId" class="form-control"
-							value="${itemType.categoryId}" required />
+						<select name="categoryId" class="form-select" required>
+							<option value="">-- Select Category --</option>
+
+							<c:forEach var="cat" items="${categories}">
+								<option value="${cat.categoryId}"
+									<c:if test="${cat.categoryId == itemType.categoryId}">
+										selected
+									</c:if>>
+									${cat.categoryName}</option>
+							</c:forEach>
+
+						</select>
 					</div>
 				</div>
 

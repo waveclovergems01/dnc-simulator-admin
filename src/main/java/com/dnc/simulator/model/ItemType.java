@@ -1,18 +1,10 @@
 package com.dnc.simulator.model;
 
 public class ItemType {
-	private int typeId;
+	private Integer typeId;
 	private String typeName;
 	private String slot;
-	private int categoryId;
-
-	public int getTypeId() {
-		return typeId;
-	}
-
-	public void setTypeId(int typeId) {
-		this.typeId = typeId;
-	}
+	private Integer categoryId;
 
 	public String getTypeName() {
 		return typeName;
@@ -30,11 +22,19 @@ public class ItemType {
 		this.slot = slot;
 	}
 
-	public int getCategoryId() {
+	public Integer getTypeId() {
+		return typeId;
+	}
+
+	public void setTypeId(Integer typeId) {
+		this.typeId = typeId;
+	}
+
+	public Integer getCategoryId() {
 		return categoryId;
 	}
 
-	public void setCategoryId(int categoryId) {
+	public void setCategoryId(Integer categoryId) {
 		this.categoryId = categoryId;
 	}
 
