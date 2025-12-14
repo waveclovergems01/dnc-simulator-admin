@@ -1,10 +1,15 @@
 package com.dnc.simulator.controller;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import com.dnc.simulator.model.EquipmentItem;
+import com.dnc.simulator.model.EquipmentItemStat;
 import com.dnc.simulator.service.*;
 
 @Controller
@@ -26,10 +31,25 @@ public class MasterEquipmentItemController {
 		this.statService = statService;
 	}
 
+	/* ========================= LIST ========================= */
 	@GetMapping("/master/equipment")
 	public String list(Model model) {
 
-		model.addAttribute("items", equipmentService.getAll());
+		List<EquipmentItem> items = equipmentService.getAll();
+		model.addAttribute("items", items);
+
+		model.addAttribute("itemTypes", itemTypeService.getAllItemTypes());
+		model.addAttribute("jobs", jobService.getAllJobs());
+		model.addAttribute("rarities", rarityService.getAllRarities());
+
+		// ✅ FIX: distinct set ids
+		Set<Integer> setIds = new LinkedHashSet<>();
+		for (EquipmentItem e : items) {
+			if (e.getSetId() != null) {
+				setIds.add(e.getSetId());
+			}
+		}
+		model.addAttribute("setIds", setIds);
 
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/equipment.jsp");
 		model.addAttribute("activeMenuGroup", "master");
@@ -38,6 +58,7 @@ public class MasterEquipmentItemController {
 		return "layout/main";
 	}
 
+	/* ========================= ADD ========================= */
 	@GetMapping("/master/equipment/add")
 	public String addForm(Model model) {
 
@@ -55,6 +76,7 @@ public class MasterEquipmentItemController {
 		return "layout/main";
 	}
 
+	/* ========================= EDIT ========================= */
 	@GetMapping("/master/equipment/edit")
 	public String editForm(@RequestParam Long itemId, Model model) {
 
@@ -72,13 +94,51 @@ public class MasterEquipmentItemController {
 		return "layout/main";
 	}
 
+	@GetMapping("/master/equipment/clone")
+	public String cloneForm(@RequestParam Long itemId, Model model) {
+
+		EquipmentItem original = equipmentService.getById(itemId);
+
+		if (original == null) {
+			return "redirect:/master/equipment";
+		}
+
+		// ❗ สำคัญ: reset itemId เพื่อบังคับกรอกใหม่
+		original.setItemId(null);
+
+		model.addAttribute("item", original);
+		model.addAttribute("itemTypes", itemTypeService.getAllItemTypes());
+		model.addAttribute("jobs", jobService.getAllJobs());
+		model.addAttribute("rarities", rarityService.getAllRarities());
+		model.addAttribute("stats", statService.getAllStats());
+
+		// clone = add
+		model.addAttribute("isAdd", true);
+
+		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/equipment-form.jsp");
+		model.addAttribute("activeMenuGroup", "master");
+		model.addAttribute("activeMenu", "equipment");
+
+		return "layout/main";
+	}
+
+	/* ========================= SAVE ========================= */
 	@PostMapping("/master/equipment/save")
 	public String save(@ModelAttribute EquipmentItem item, @RequestParam boolean isAdd) {
+		if (item != null && item.getItemId() != null && item.getStats() != null && !item.getStats().isEmpty()) {
+			for (EquipmentItemStat temp : item.getStats()) {
+				temp.setItemId(item.getItemId());
+				if (temp.getIsPercentage() == null) {
+					temp.setIsPercentage(0);
+				}
+			}
+		}
 
 		equipmentService.save(item, isAdd);
 		return "redirect:/master/equipment";
 	}
 
+	/* ========================= DELETE ========================= */
 	@PostMapping("/master/equipment/delete")
 	public String delete(@RequestParam Long itemId) {
 
