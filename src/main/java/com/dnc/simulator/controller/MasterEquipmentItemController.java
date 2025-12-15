@@ -20,15 +20,18 @@ public class MasterEquipmentItemController {
 	private final JobService jobService;
 	private final RarityService rarityService;
 	private final StatService statService;
+	private final SetBonusService setBonusService;
 
 	public MasterEquipmentItemController(EquipmentItemService equipmentService, ItemTypeService itemTypeService,
-			JobService jobService, RarityService rarityService, StatService statService) {
+			JobService jobService, RarityService rarityService, StatService statService,
+			SetBonusService setBonusService) {
 
 		this.equipmentService = equipmentService;
 		this.itemTypeService = itemTypeService;
 		this.jobService = jobService;
 		this.rarityService = rarityService;
 		this.statService = statService;
+		this.setBonusService = setBonusService;
 	}
 
 	/* ========================= LIST ========================= */
@@ -41,8 +44,8 @@ public class MasterEquipmentItemController {
 		model.addAttribute("itemTypes", itemTypeService.getAllItemTypes());
 		model.addAttribute("jobs", jobService.getAllJobs());
 		model.addAttribute("rarities", rarityService.getAllRarities());
+		model.addAttribute("setBonuses", setBonusService.getAll());
 
-		// ✅ FIX: distinct set ids
 		Set<Integer> setIds = new LinkedHashSet<>();
 		for (EquipmentItem e : items) {
 			if (e.getSetId() != null) {
@@ -67,6 +70,7 @@ public class MasterEquipmentItemController {
 		model.addAttribute("jobs", jobService.getAllJobs());
 		model.addAttribute("rarities", rarityService.getAllRarities());
 		model.addAttribute("stats", statService.getAllStats());
+		model.addAttribute("setBonuses", setBonusService.getAll());
 		model.addAttribute("isAdd", true);
 
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/equipment-form.jsp");
@@ -85,6 +89,7 @@ public class MasterEquipmentItemController {
 		model.addAttribute("jobs", jobService.getAllJobs());
 		model.addAttribute("rarities", rarityService.getAllRarities());
 		model.addAttribute("stats", statService.getAllStats());
+		model.addAttribute("setBonuses", setBonusService.getAll());
 		model.addAttribute("isAdd", false);
 
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/equipment-form.jsp");
@@ -94,6 +99,7 @@ public class MasterEquipmentItemController {
 		return "layout/main";
 	}
 
+	/* ========================= CLONE ========================= */
 	@GetMapping("/master/equipment/clone")
 	public String cloneForm(@RequestParam Long itemId, Model model) {
 
@@ -103,7 +109,7 @@ public class MasterEquipmentItemController {
 			return "redirect:/master/equipment";
 		}
 
-		// ❗ สำคัญ: reset itemId เพื่อบังคับกรอกใหม่
+		// reset itemId
 		original.setItemId(null);
 
 		model.addAttribute("item", original);
@@ -111,8 +117,7 @@ public class MasterEquipmentItemController {
 		model.addAttribute("jobs", jobService.getAllJobs());
 		model.addAttribute("rarities", rarityService.getAllRarities());
 		model.addAttribute("stats", statService.getAllStats());
-
-		// clone = add
+		model.addAttribute("setBonuses", setBonusService.getAll());
 		model.addAttribute("isAdd", true);
 
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/equipment-form.jsp");
@@ -125,11 +130,12 @@ public class MasterEquipmentItemController {
 	/* ========================= SAVE ========================= */
 	@PostMapping("/master/equipment/save")
 	public String save(@ModelAttribute EquipmentItem item, @RequestParam boolean isAdd) {
-		if (item != null && item.getItemId() != null && item.getStats() != null && !item.getStats().isEmpty()) {
-			for (EquipmentItemStat temp : item.getStats()) {
-				temp.setItemId(item.getItemId());
-				if (temp.getIsPercentage() == null) {
-					temp.setIsPercentage(0);
+
+		if (item != null && item.getItemId() != null && item.getStats() != null) {
+			for (EquipmentItemStat s : item.getStats()) {
+				s.setItemId(item.getItemId());
+				if (s.getIsPercentage() == null) {
+					s.setIsPercentage(0);
 				}
 			}
 		}
@@ -141,7 +147,6 @@ public class MasterEquipmentItemController {
 	/* ========================= DELETE ========================= */
 	@PostMapping("/master/equipment/delete")
 	public String delete(@RequestParam Long itemId) {
-
 		equipmentService.delete(itemId);
 		return "redirect:/master/equipment";
 	}

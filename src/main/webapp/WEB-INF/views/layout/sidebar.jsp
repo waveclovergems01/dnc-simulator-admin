@@ -40,11 +40,11 @@
 						class="nav-link ${activeMenu == 'stats' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/stats"> Stats
 					</a></li>
-					
+
 					<li><a
 						class="nav-link ${activeMenu == 'equipment' ? 'active' : ''}"
-						href="${pageContext.request.contextPath}/master/equipment"> Equipment Item
-					</a></li>
+						href="${pageContext.request.contextPath}/master/equipment">
+							Equipment Item </a></li>
 
 					<li><a
 						class="nav-link ${activeMenu == 'rarity' ? 'active' : ''}"
@@ -59,7 +59,7 @@
 					<li><a
 						class="nav-link ${activeMenu == 'set-bonus' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/set-bonus">
-							set-bonus </a></li>
+							Set Bonus </a></li>
 
 				</ul>
 			</div></li>

@@ -43,13 +43,14 @@
 			</select>
 		</div>
 
-		<!-- Set ID Filter (DISTINCT จาก controller) -->
+		<!-- Set Filter (ใช้ชื่อ Set) -->
 		<div class="col-md-3">
-			<label class="form-label">Filter by Set ID</label> <select
+			<label class="form-label">Filter by Set</label> <select
 				id="setFilter" class="form-select">
 				<option value="">-- All Sets --</option>
-				<c:forEach items="${setIds}" var="sid">
-					<option value="${sid}">${sid}</option>
+				<c:forEach items="${setBonuses}" var="s">
+					<option value="${s.setName}">${s.setName} (ID: ${s.setId})
+					</option>
 				</c:forEach>
 			</select>
 		</div>
@@ -75,7 +76,7 @@
 			<th>Req Lv</th>
 			<th>Rarity</th>
 			<th>Durability</th>
-			<th>Set ID</th>
+			<th>Set</th>
 			<th style="width: 260px;">Action</th>
 		</tr>
 	</thead>
@@ -96,39 +97,45 @@
 								<span class="text-muted">(${t.slot})</span>
 							</c:if>
 							<br />
-							<small class="text-muted"> ID: ${t.typeId} </small>
+							<small class="text-muted">ID: ${t.typeId}</small>
 						</c:if>
 					</c:forEach></td>
 
 				<!-- Job -->
 				<td><c:forEach items="${jobs}" var="j">
 						<c:if test="${j.id == e.jobId}">
-							${j.name}
-							<br />
-							<small class="text-muted"> ID: ${j.id} </small>
+                            ${j.name}
+                            <br />
+							<small class="text-muted">ID: ${j.id}</small>
 						</c:if>
 					</c:forEach></td>
 
 				<!-- Required Level -->
 				<td class="text-center">${e.requiredLevel}</td>
 
-				<!-- Rarity (สีจาก DB) -->
+				<!-- Rarity -->
 				<td><c:forEach items="${rarities}" var="r">
 						<c:if test="${r.rarityId == e.rarityId}">
 							<span style="color:${r.color}; font-weight:600;">
 								${r.rarityName} </span>
 							<br />
-							<small class="text-muted"> ID: ${r.rarityId} </small>
+							<small class="text-muted">ID: ${r.rarityId}</small>
 						</c:if>
 					</c:forEach></td>
 
 				<!-- Durability -->
 				<td class="text-center">${e.durability}</td>
 
-				<!-- Set ID -->
+				<!-- ✅ Set Name -->
 				<td class="text-center"><c:choose>
 						<c:when test="${e.setId != null}">
-							${e.setId}
+							<c:forEach items="${setBonuses}" var="s">
+								<c:if test="${s.setId == e.setId}">
+									<strong>${s.setName}</strong>
+									<br />
+									<small class="text-muted"> ID: ${s.setId} </small>
+								</c:if>
+							</c:forEach>
 						</c:when>
 						<c:otherwise>
 							<span class="text-muted">-</span>
@@ -138,9 +145,9 @@
 				<!-- Action -->
 				<td class="text-center"><a
 					href="${pageContext.request.contextPath}/master/equipment/edit?itemId=${e.itemId}"
-					class="btn btn-sm btn-warning me-1"> Edit </a> <a
+					class="btn btn-sm btn-warning me-1">Edit</a> <a
 					href="${pageContext.request.contextPath}/master/equipment/clone?itemId=${e.itemId}"
-					class="btn btn-sm btn-info me-1"> Clone </a>
+					class="btn btn-sm btn-info me-1">Clone</a>
 
 					<form
 						action="${pageContext.request.contextPath}/master/equipment/delete"
@@ -174,26 +181,25 @@
 			columnDefs : [ {
 				orderable : false,
 				targets : 8
-			// Action column
 			} ]
 		});
 
-		// Job filter (column 3)
+		// Job filter (col 3)
 		$('#jobFilter').on('change', function() {
 			table.column(3).search(this.value).draw();
 		});
 
-		// Rarity filter (column 5)
+		// Rarity filter (col 5)
 		$('#rarityFilter').on('change', function() {
 			table.column(5).search(this.value).draw();
 		});
 
-		// Set ID filter (column 7)
+		// Set filter (col 7) → ใช้ชื่อ Set
 		$('#setFilter').on('change', function() {
 			table.column(7).search(this.value).draw();
 		});
 
-		// Reset all filters
+		// Reset
 		$('#resetFilter').on('click', function() {
 			$('#jobFilter').val('');
 			$('#rarityFilter').val('');

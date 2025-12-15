@@ -99,7 +99,7 @@
 							<c:forEach items="${stats}" var="stat">
 								<option value="${stat.statId}"
 									${stat.statId == s.statId ? 'selected' : ''}>
-									${stat.statName}</option>
+									${stat.displayName}</option>
 							</c:forEach>
 					</select></td>
 					<td><input type="number" name="stats[${st.index}].valueMin"
@@ -141,7 +141,7 @@
 						class="form-select">
 					<c:forEach items="${stats}" var="stat">
 						<option value="${stat.statId}">
-							${stat.statName}
+							${stat.displayName}
 						</option>
 					</c:forEach>
 				</select>
