@@ -8,11 +8,26 @@ import com.dnc.simulator.model.SuffixItemExtraStat;
 
 public interface SuffixItemStatService {
 
-	/* ===================== Ability ===================== */
+	/*
+	 * ===================================================== EXTRA STAT (ของเดิม)
+	 * =====================================================
+	 */
+	List<SuffixItemExtraStat> getExtraStats(Integer suffixItemId);
+
+	Integer saveExtraStat(SuffixItemExtraStat stat);
+
+	void deleteExtraStat(Integer id);
+
+	void deleteExtraStatsBySuffixItemId(Integer suffixItemId);
+
+	List<SuffixItemExtraStat> buildDefaultExtraStats(Integer suffixTypeId);
+
+	/*
+	 * ===================================================== ABILITY (ADD)
+	 * =====================================================
+	 */
 
 	List<SuffixItemAbility> getAbilities(Integer suffixItemId);
-
-	SuffixItemAbility getAbilityWithStats(Integer abilityId);
 
 	List<SuffixItemAbility> getAbilitiesWithStatsBySuffixItemId(Integer suffixItemId);
 
@@ -20,7 +35,7 @@ public interface SuffixItemStatService {
 
 	void deleteAbility(Integer abilityId);
 
-	/* ===================== Ability Stat ===================== */
+	/* ================= Ability Stat ================= */
 
 	List<SuffixItemAbilityStat> getAbilityStats(Integer abilityId);
 
@@ -28,23 +43,8 @@ public interface SuffixItemStatService {
 
 	void deleteAbilityStat(Integer id);
 
-	/* ===================== Extra Stat ===================== */
-
-	List<SuffixItemExtraStat> getExtraStats(Integer suffixItemId);
-
-	Integer saveExtraStat(SuffixItemExtraStat stat);
-
-	void deleteExtraStat(Integer id);
-
-	/* ===================== Extra Stat (เพิ่มใหม่) ===================== */
-
-	/**
-	 * ลบ extra stats ทั้งหมดของ suffix item (ใช้ตอน save-form)
-	 */
-	void deleteExtraStatsBySuffixItemId(Integer suffixItemId);
-
-	/**
-	 * สร้าง default extra stats จาก suffix type (ยังไม่ save ลง DB)
-	 */
-	List<SuffixItemExtraStat> buildDefaultExtraStats(Integer suffixTypeId);
+	/* ===== IMPORTANT (ADD) ===== */
+	void deleteAbilityStatsByAbilityId(Integer abilityId);
+	
+	void deleteAbilityBySuffixItemId(Integer suffixItemId);
 }

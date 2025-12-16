@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.dnc.simulator.model.SuffixItem;
+import com.dnc.simulator.model.SuffixItemAbility;
 import com.dnc.simulator.model.SuffixItemExtraStat;
 import com.dnc.simulator.service.EquipmentItemService;
 import com.dnc.simulator.service.StatService;
@@ -140,6 +141,7 @@ public class MasterSuffixItemController {
 	@PostMapping("/delete")
 	public String delete(@RequestParam Long id) {
 		suffixItemStatService.deleteExtraStatsBySuffixItemId(id.intValue());
+		suffixItemStatService.deleteAbilityBySuffixItemId(id.intValue());
 		suffixItemService.delete(id);
 		return "redirect:/master/suffix-items";
 	}
@@ -158,21 +160,46 @@ public class MasterSuffixItemController {
 			throw new IllegalArgumentException("Suffix item not found: " + suffixItemId);
 		}
 
-		// 2. โหลด extra stats จาก DB
+		/*
+		 * ===================================================== EXTRA STATS (ของเดิม)
+		 * =====================================================
+		 */
+
 		List<SuffixItemExtraStat> extraStats = suffixItemStatService.getExtraStats(suffixItemId);
 
-		// 3. ถ้ายังไม่มี → load default
 		if (extraStats == null || extraStats.isEmpty()) {
 			extraStats = suffixItemStatService.buildDefaultExtraStats(suffixItem.getSuffixTypeId());
 		}
 
-		// 4. master stats
+		/*
+		 * ===================================================== ABILITY (ADD)
+		 * =====================================================
+		 */
+
+		// ดึง ability ทั้งหมดของ suffix item นี้
+		List<SuffixItemAbility> abilities = suffixItemStatService.getAbilitiesWithStatsBySuffixItemId(suffixItemId);
+
+		// ใช้ ability แรก (กรณี 1 suffix item = 1 ability)
+		SuffixItemAbility ability = abilities.isEmpty() ? new SuffixItemAbility() : abilities.get(0);
+
+		/*
+		 * ===================================================== MODEL
+		 * =====================================================
+		 */
+
 		model.addAttribute("suffixItemId", suffixItemId);
 		model.addAttribute("itemId", suffixItem.getItemId());
+
 		model.addAttribute("stats", statService.getAllStats());
 		model.addAttribute("extraStats", extraStats);
 
-		// 5. layout
+		model.addAttribute("ability", ability);
+
+		/*
+		 * ===================================================== LAYOUT
+		 * =====================================================
+		 */
+
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/suffix-item-stats-form.jsp");
 		model.addAttribute("activeMenuGroup", "master");
 		model.addAttribute("activeMenu", "suffix-items");

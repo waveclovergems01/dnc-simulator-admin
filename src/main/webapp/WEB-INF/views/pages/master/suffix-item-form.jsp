@@ -1,7 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
-<h2 class="mb-3">Manage Suffixes</h2>
+<!-- ================= HEADER + BACK ================= -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+	<h2 class="mb-0">Manage Suffixes</h2>
+
+	<!-- BACK BUTTON (ADD ONLY) -->
+	<button type="button" class="btn btn-secondary" onclick="goBack()">
+		← Back</button>
+</div>
 
 <div class="card p-4 shadow-sm">
 
@@ -76,6 +83,11 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
+/* ================= BACK (ADD ONLY) ================= */
+function goBack() {
+	location.href = '${pageContext.request.contextPath}/master/suffix-items';
+}
+
 /* ================= CHANGE ITEM ================= */
 $('#itemId').on('change', function () {
 	const itemId = $(this).val();
@@ -208,7 +220,7 @@ $(document).on('click', '.deleteSuffixBtn', function () {
 	});
 });
 
-/* ================= OPEN STATS PAGE (NO POPUP) ================= */
+/* ================= OPEN STATS PAGE ================= */
 $(document).on('click', '.openStatsBtn', function () {
 
 	const suffixItemId =
