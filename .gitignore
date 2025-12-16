@@ -24,3 +24,5 @@ hs_err_pid*
 replay_pid*
 /target/
 .settings/
+db/dnc-simulator.db-shm
+db/dnc-simulator.db-wal
