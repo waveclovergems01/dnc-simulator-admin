@@ -179,7 +179,7 @@ public class SuffixItemStatServiceImpl implements SuffixItemStatService {
 	public void deleteAbilityBySuffixItemId(Integer suffixItemId) {
 		if (suffixItemId != null && suffixItemId > 0) {
 			List<SuffixItemAbility> ability = abilityRepository.findBySuffixItemId(suffixItemId);
-			if(ability != null) {
+			if(ability != null && !ability.isEmpty()) {
 				abilityStatRepository.deleteByAbilityId(ability.get(0).getAbilityId());
 				abilityRepository.deleteBySuffixItemId(ability.get(0).getSuffixItemId());
 			}

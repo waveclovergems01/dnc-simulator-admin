@@ -1,9 +1,12 @@
 package com.dnc.simulator.controller;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.dnc.simulator.model.Job;
 import com.dnc.simulator.model.SuffixItem;
 import com.dnc.simulator.model.SuffixItemAbility;
 import com.dnc.simulator.model.SuffixItemExtraStat;
 import com.dnc.simulator.service.EquipmentItemService;
+import com.dnc.simulator.service.JobService;
 import com.dnc.simulator.service.StatService;
 import com.dnc.simulator.service.SuffixItemService;
 import com.dnc.simulator.service.SuffixItemStatService;
@@ -31,32 +36,60 @@ public class MasterSuffixItemController {
 	private final EquipmentItemService equipmentItemService;
 	private final SuffixService suffixService;
 	private final StatService statService;
+	private final JobService jobService;
 
 	public MasterSuffixItemController(SuffixItemService suffixItemService, EquipmentItemService equipmentItemService,
-			SuffixService suffixService, StatService statService, SuffixItemStatService suffixItemStatService) {
+			SuffixService suffixService, StatService statService, SuffixItemStatService suffixItemStatService,
+			JobService jobService) {
 
 		this.suffixItemService = suffixItemService;
 		this.equipmentItemService = equipmentItemService;
 		this.suffixService = suffixService;
 		this.statService = statService;
 		this.suffixItemStatService = suffixItemStatService;
+		this.jobService = jobService;
 	}
 
 	/* ================= LIST ================= */
 	@GetMapping
 	public String list(Model model) {
 
-		model.addAttribute("items", suffixItemService.getAll());
+		List<SuffixItem> suffixItems = suffixItemService.getAll();
+		model.addAttribute("items", suffixItems);
 
-		// equipment item map (itemId -> name)
+		// ===== distinct สำหรับ filter item =====
+		List<SuffixItem> filterSuffixItems = suffixItems.stream()
+				.collect(
+						Collectors.toMap(SuffixItem::getItemId, s -> s, (oldVal, newVal) -> oldVal, LinkedHashMap::new))
+				.values().stream().collect(Collectors.toList());
+
+		model.addAttribute("filterSuffixItems", filterSuffixItems);
+
+		// ===== equipment item map (itemId -> name) =====
 		Map<Long, String> equipmentItemMap = new HashMap<>();
 		equipmentItemService.getAll().forEach(e -> equipmentItemMap.put(e.getItemId(), e.getName()));
 		model.addAttribute("equipmentItemMap", equipmentItemMap);
 
-		// suffix type map (suffixTypeId -> name)
+		// ===== suffix type map =====
 		Map<Integer, String> suffixTypeMap = new HashMap<>();
 		suffixService.getAllSuffixTypes().forEach(t -> suffixTypeMap.put(t.getSuffixId(), t.getSuffixName()));
 		model.addAttribute("suffixTypeMap", suffixTypeMap);
+
+		// ===== jobId -> jobName (sorted asc) =====
+		Map<Integer, String> jobMap = jobService.getAllJobs().stream().sorted(Comparator.comparingInt(Job::getId))
+				.collect(Collectors.toMap(Job::getId, Job::getName, (a, b) -> a, LinkedHashMap::new));
+
+		// ===== itemId -> jobName (for table) =====
+		Map<Long, String> itemJobMap = new HashMap<>();
+		equipmentItemService.getAll().forEach(e -> itemJobMap.put(e.getItemId(), jobMap.get(e.getJobId())));
+		model.addAttribute("itemJobMap", itemJobMap);
+
+		// ===== job filter (distinct + sorted) =====
+		Map<Integer, String> jobFilterMap = new LinkedHashMap<>();
+		equipmentItemService.getAll().forEach(e -> jobFilterMap.putIfAbsent(e.getJobId(), jobMap.get(e.getJobId())));
+		model.addAttribute("jobFilterMap", jobFilterMap);
+
+		// =================================================
 
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/suffix-items.jsp");
 		model.addAttribute("activeMenuGroup", "master");

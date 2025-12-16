@@ -10,6 +10,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.dnc.simulator.model.SuffixItem;
+import com.dnc.simulator.model.SuffixItemAbility;
+import com.dnc.simulator.model.SuffixItemExtraStat;
 
 @Repository
 public class SuffixItemRepositoryImpl implements SuffixItemRepository {
@@ -41,7 +43,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 
 		String sql = "SELECT id, item_id, suffix_type_id, name " + "FROM m_suffix_items " + "WHERE id = ?";
 
-		return jdbcTemplate.queryForObject(sql, (rs, i) -> {
+		SuffixItem result = jdbcTemplate.queryForObject(sql, (rs, i) -> {
 			SuffixItem s = new SuffixItem();
 			s.setId(rs.getLong("id"));
 			s.setItemId(rs.getLong("item_id"));
@@ -49,6 +51,18 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 			s.setName(rs.getString("name"));
 			return s;
 		}, id);
+
+		if (result.getId() != null && result.getId().longValue() > 0) {
+			List<SuffixItemExtraStat> extraStats = new SuffixItemExtraStatRepositoryImpl(jdbcTemplate)
+					.findBySuffixItemId(result.getId().intValue());
+			result.setExtraStats(extraStats);
+
+			List<SuffixItemAbility> abilities = new SuffixItemAbilityRepositoryImpl(jdbcTemplate)
+					.findBySuffixItemId(result.getId().intValue());
+			result.setAbilities(abilities);
+		}
+
+		return result;
 	}
 
 	@Override

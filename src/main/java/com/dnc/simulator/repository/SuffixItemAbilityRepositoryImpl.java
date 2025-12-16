@@ -10,6 +10,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.dnc.simulator.model.SuffixItemAbility;
+import com.dnc.simulator.model.SuffixItemAbilityStat;
 
 @Repository
 public class SuffixItemAbilityRepositoryImpl implements SuffixItemAbilityRepository {
@@ -30,7 +31,7 @@ public class SuffixItemAbilityRepositoryImpl implements SuffixItemAbilityReposit
 		String sql = "SELECT ability_id, suffix_item_id, raw_text, type " + "FROM m_suffix_item_abilities "
 				+ "WHERE ability_id = ?";
 
-		return jdbcTemplate.queryForObject(sql, (rs, i) -> {
+		SuffixItemAbility result = jdbcTemplate.queryForObject(sql, (rs, i) -> {
 			SuffixItemAbility a = new SuffixItemAbility();
 			a.setAbilityId(rs.getInt("ability_id"));
 			a.setSuffixItemId(rs.getInt("suffix_item_id"));
@@ -38,6 +39,13 @@ public class SuffixItemAbilityRepositoryImpl implements SuffixItemAbilityReposit
 			a.setType(rs.getString("type"));
 			return a;
 		}, abilityId);
+		
+		if(result.getAbilityId() != null && result.getAbilityId().intValue() > 0) {
+			List<SuffixItemAbilityStat> abilityStats = new SuffixItemAbilityStatRepositoryImpl(jdbcTemplate).findByAbilityId(abilityId);
+			result.setAbilityStats(abilityStats);
+		}
+
+		return result;
 	}
 
 	/*
@@ -49,8 +57,8 @@ public class SuffixItemAbilityRepositoryImpl implements SuffixItemAbilityReposit
 
 		String sql = "SELECT ability_id, suffix_item_id, raw_text, type " + "FROM m_suffix_item_abilities "
 				+ "WHERE suffix_item_id = ? " + "ORDER BY ability_id";
-
-		return jdbcTemplate.query(sql, (rs, i) -> {
+		
+		List<SuffixItemAbility> results = jdbcTemplate.query(sql, (rs, i) -> {
 			SuffixItemAbility a = new SuffixItemAbility();
 			a.setAbilityId(rs.getInt("ability_id"));
 			a.setSuffixItemId(rs.getInt("suffix_item_id"));
@@ -58,6 +66,18 @@ public class SuffixItemAbilityRepositoryImpl implements SuffixItemAbilityReposit
 			a.setType(rs.getString("type"));
 			return a;
 		}, suffixItemId);
+		
+		if(results == null || results.isEmpty()) {
+			return results;
+		}
+		
+		SuffixItemAbility result = results.get(0);
+		if(result != null && result.getAbilityId() != null && result.getAbilityId().intValue() > 0) {
+			List<SuffixItemAbilityStat> abilityStats = new SuffixItemAbilityStatRepositoryImpl(jdbcTemplate).findByAbilityId(result.getAbilityId());
+			result.setAbilityStats(abilityStats);
+		}
+		
+		return results;
 	}
 
 	/*
@@ -105,7 +125,7 @@ public class SuffixItemAbilityRepositoryImpl implements SuffixItemAbilityReposit
 
 		jdbcTemplate.update(sql, abilityId);
 	}
-	
+
 	@Override
 	public void deleteBySuffixItemId(Integer suffixItemId) {
 

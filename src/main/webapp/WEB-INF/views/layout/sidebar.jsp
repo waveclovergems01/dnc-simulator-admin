@@ -14,7 +14,7 @@
 		<!-- Master Data -->
 		<li class="nav-item"><a
 			class="nav-link d-flex justify-content-between align-items-center
-               ${activeMenuGroup == 'master' ? 'active' : ''}"
+	               ${activeMenuGroup == 'master' ? 'active' : ''}"
 			data-bs-toggle="collapse" href="#masterMenu"> 🗂 Master Data <span>▾</span>
 		</a>
 
@@ -66,6 +66,22 @@
 						href="${pageContext.request.contextPath}/master/set-bonus">
 							Set Bonus </a></li>
 
+				</ul>
+			</div></li>
+		<li class="nav-item"><a
+			class="nav-link d-flex justify-content-between align-items-center
+	               ${activeMenuGroup == 'json' ? 'active' : ''}"
+			data-bs-toggle="collapse" href="#jsonMenu"> 🗂 JSON Data <span>▾</span>
+		</a>
+
+			<div class="collapse ${activeMenuGroup == 'json' ? 'show' : ''}"
+				id="jsonMenu">
+				<ul class="nav flex-column ms-3 mt-1">
+
+					<li><a
+						class="nav-link ${activeMenu == 'export' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/json/export"> Export
+					</a></li>
 				</ul>
 			</div></li>
 

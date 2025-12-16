@@ -7,7 +7,7 @@ public interface SuffixItemExtraStatRepository {
 
 	/* ===== query ===== */
 
-	List<SuffixItemExtraStat> findBySuffixItemId(Integer suffixItemId);
+	public List<SuffixItemExtraStat> findBySuffixItemId(Integer suffixItemId);
 
 	/* ===== insert / update ===== */
 
