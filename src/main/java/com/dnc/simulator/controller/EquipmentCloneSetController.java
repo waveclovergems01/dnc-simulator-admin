@@ -8,12 +8,16 @@ import java.util.Set;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.dnc.simulator.model.EquipmentItem;
 import com.dnc.simulator.model.EquipmentItemStat;
 import com.dnc.simulator.service.EquipmentCloneService;
 import com.dnc.simulator.service.EquipmentItemService;
+import com.dnc.simulator.service.ItemTypeService;
 import com.dnc.simulator.service.JobService;
 import com.dnc.simulator.service.RarityService;
 import com.dnc.simulator.service.SetBonusService;
@@ -27,16 +31,18 @@ public class EquipmentCloneSetController {
 	private final JobService jobService;
 	private final RarityService rarityService;
 	private final SetBonusService setBonusService;
+	private final ItemTypeService itemTypeService;
 
 	public EquipmentCloneSetController(EquipmentItemService equipmentItemService,
 			EquipmentCloneService equipmentCloneService, JobService jobService, RarityService rarityService,
-			SetBonusService setBonusService) {
+			SetBonusService setBonusService, ItemTypeService itemTypeService) {
 
 		this.equipmentItemService = equipmentItemService;
 		this.equipmentCloneService = equipmentCloneService;
 		this.jobService = jobService;
 		this.rarityService = rarityService;
 		this.setBonusService = setBonusService;
+		this.itemTypeService = itemTypeService;
 	}
 
 	/*
@@ -60,6 +66,7 @@ public class EquipmentCloneSetController {
 		model.addAttribute("setBonuses", setBonusService.getAll());
 		model.addAttribute("jobs", jobService.getAllJobs());
 		model.addAttribute("rarities", rarityService.getAllRarities());
+		model.addAttribute("itemTypes", itemTypeService.getAllItemTypes());
 
 		if (setId != null) {
 			List<EquipmentItem> originals = equipmentCloneService.getItemsBySetId(Long.valueOf(setId));
@@ -84,7 +91,7 @@ public class EquipmentCloneSetController {
 			@RequestParam Integer newSetId,
 
 			@RequestParam(required = false) Integer globalJob, @RequestParam(required = false) Integer globalRarity,
-			@RequestParam(required = false) Integer globalReqLv,
+			@RequestParam(required = false) Integer globalReqLv, @RequestParam(required = false) Integer globalType,
 
 			@RequestParam("originalItemId") List<Long> originalItemIds,
 			@RequestParam("newItemId") List<Long> newItemIds,
@@ -101,45 +108,65 @@ public class EquipmentCloneSetController {
 			if (newItemId == null)
 				continue;
 
-			EquipmentItem original = equipmentItemService.getById(originalId);
-			if (original == null)
-				continue;
+			EquipmentItem original = null;
+			if (originalId != null && originalId > 0) {
+				original = equipmentItemService.getById(originalId);
+				if (original == null)
+					continue;
+			}
+
+			String suffix = (originalId != null && originalId > 0) ? String.valueOf(originalId) : "n" + i;
 
 			EquipmentItem clone = new EquipmentItem();
 			clone.setItemId(newItemId);
 
-			// name already processed by UI
-			clone.setName(params.get("name_" + originalId));
+			/* ===== NAME ===== */
+			clone.setName(params.get("name_" + suffix));
 
-			clone.setTypeId(original.getTypeId());
+			/* ===== TYPE (CRITICAL FIX) ===== */
+			Integer typeId = globalType != null ? globalType
+					: parseInt(params.get("typeId_" + suffix), original != null ? original.getTypeId() : null);
 
-			clone.setJobId(
-					globalJob != null ? globalJob : parseInt(params.get("jobId_" + originalId), original.getJobId()));
+			if (typeId == null) {
+				// ❌ ป้องกัน insert item ใหม่โดยไม่มี type
+				continue;
+			}
+			clone.setTypeId(typeId);
 
-			clone.setRarityId(globalRarity != null ? globalRarity
-					: parseInt(params.get("rarityId_" + originalId), original.getRarityId()));
+			/* ===== JOB ===== */
+			Integer job = globalJob != null ? globalJob
+					: parseInt(params.get("jobId_" + suffix), original != null ? original.getJobId() : null);
+			clone.setJobId(job);
 
-			clone.setRequiredLevel(globalReqLv != null ? globalReqLv
-					: parseInt(params.get("requiredLevel_" + originalId), original.getRequiredLevel()));
+			/* ===== RARITY ===== */
+			Integer rarity = globalRarity != null ? globalRarity
+					: parseInt(params.get("rarityId_" + suffix), original != null ? original.getRarityId() : null);
+			clone.setRarityId(rarity);
 
-			clone.setDurability(parseInt(params.get("durability_" + originalId), original.getDurability()));
+			/* ===== REQUIRED LEVEL ===== */
+			Integer reqLv = globalReqLv != null ? globalReqLv
+					: parseInt(params.get("requiredLevel_" + suffix),
+							original != null ? original.getRequiredLevel() : null);
+			clone.setRequiredLevel(reqLv);
 
-			// global set id
+			/* ===== DURABILITY ===== */
+			clone.setDurability(original != null ? original.getDurability() : 0);
+
+			/* ===== SET ===== */
 			clone.setSetId(newSetId);
 
-			// deep clone stats
-			if (original.getStats() != null) {
+			/* ===== STATS ===== */
+			if (original != null && original.getStats() != null) {
 				for (EquipmentItemStat s : original.getStats()) {
 					s.setItemId(null);
 				}
 				clone.setStats(original.getStats());
 			}
 
-			clones.put(originalId, clone);
+			clones.put(newItemId, clone);
 		}
 
 		int success = equipmentCloneService.cloneSetWithEditedValues(null, clones);
-
 		return "redirect:/master/equipment?cloned=" + success;
 	}
 

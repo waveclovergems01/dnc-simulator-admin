@@ -38,6 +38,11 @@ public class EquipmentItemRepositoryImpl implements EquipmentItemRepository {
 
 	@Override
 	public EquipmentItem findById(Long itemId) {
+		
+		if (itemId == null || itemId <= 0) {
+			return null;
+		}
+		
 		String sql = "SELECT item_id, name, type_id, job_id, required_level, " + "rarity_id, durability, set_id "
 				+ "FROM m_equipment_items WHERE item_id = ?";
 
@@ -93,8 +98,8 @@ public class EquipmentItemRepositoryImpl implements EquipmentItemRepository {
 			EquipmentItemStat s = new EquipmentItemStat();
 			s.setItemId(rs.getLong("item_id"));
 			s.setStatId(rs.getInt("stat_id"));
-			s.setValueMin(rs.getInt("value_min"));
-			s.setValueMax(rs.getInt("value_max"));
+			s.setValueMin(rs.getDouble("value_min"));
+			s.setValueMax(rs.getDouble("value_max"));
 			s.setIsPercentage(rs.getInt("is_percentage"));
 			return s;
 		}, itemId);

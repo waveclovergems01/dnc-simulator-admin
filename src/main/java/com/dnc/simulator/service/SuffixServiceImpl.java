@@ -102,4 +102,5 @@ public class SuffixServiceImpl implements SuffixService {
 	public void deleteGroupItem(Integer id) {
 		suffixRepository.deleteGroupItem(id);
 	}
+
 }

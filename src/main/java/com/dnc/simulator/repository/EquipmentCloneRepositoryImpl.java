@@ -48,8 +48,8 @@ public class EquipmentCloneRepositoryImpl implements EquipmentCloneRepository {
 			EquipmentItemStat s = new EquipmentItemStat();
 			s.setItemId(rs.getLong("item_id"));
 			s.setStatId(rs.getInt("stat_id"));
-			s.setValueMin(rs.getInt("value_min"));
-			s.setValueMax(rs.getInt("value_max"));
+			s.setValueMin(rs.getDouble("value_min"));
+			s.setValueMax(rs.getDouble("value_max"));
 			s.setIsPercentage(rs.getInt("is_percentage"));
 			return s;
 		}, itemId);

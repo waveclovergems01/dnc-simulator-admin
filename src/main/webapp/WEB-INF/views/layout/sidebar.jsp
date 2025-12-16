@@ -47,7 +47,7 @@
 							Equipment Item </a></li>
 
 					<li><a
-						class="nav-link ${activeMenu == 'rarity' ? 'active' : ''}"
+						class="nav-link ${activeMenu == 'rarities' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/rarities">
 							Rarity </a></li>
 
@@ -55,6 +55,11 @@
 						class="nav-link ${activeMenu == 'suffix' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/suffix">
 							Suffix </a></li>
+
+					<li><a
+						class="nav-link ${activeMenu == 'suffix-items' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/suffix-items">
+							Suffix Items </a></li>
 
 					<li><a
 						class="nav-link ${activeMenu == 'set-bonus' ? 'active' : ''}"

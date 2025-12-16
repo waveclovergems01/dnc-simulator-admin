@@ -1,20 +1,28 @@
 package com.dnc.simulator.model;
 
-public class EquipmentItemStat {
+public class SuffixItemExtraStat {
 
-	private Long itemId;
+	private Integer id;
+	private Integer suffixItemId;
 	private Integer statId;
 	private Double valueMin;
 	private Double valueMax;
 	private Integer isPercentage; // 0 / 1
 
-	
-	public Long getItemId() {
-		return itemId;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setItemId(Long itemId) {
-		this.itemId = itemId;
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getSuffixItemId() {
+		return suffixItemId;
+	}
+
+	public void setSuffixItemId(Integer suffixItemId) {
+		this.suffixItemId = suffixItemId;
 	}
 
 	public Integer getStatId() {
@@ -25,7 +33,6 @@ public class EquipmentItemStat {
 		this.statId = statId;
 	}
 
-	
 	public Double getValueMin() {
 		return valueMin;
 	}
@@ -48,5 +55,9 @@ public class EquipmentItemStat {
 
 	public void setIsPercentage(Integer isPercentage) {
 		this.isPercentage = isPercentage;
+	}
+
+	public boolean isPercentage() {
+		return isPercentage != null && isPercentage == 1;
 	}
 }

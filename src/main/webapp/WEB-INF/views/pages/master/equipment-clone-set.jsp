@@ -41,9 +41,19 @@
 			<div class="row g-3">
 
 				<div class="col-md-3">
-					<label class="form-label">New Set ID (Global)</label> <input
-						type="number" id="globalSetId" name="newSetId"
-						class="form-control" required />
+					<label class="form-label">New Set ID</label> <input type="number"
+						id="globalSetId" name="newSetId" class="form-control" required />
+				</div>
+
+				<div class="col-md-3">
+					<label class="form-label">Item Type (Global)</label> <select
+						id="globalType" name="globalType" class="form-select">
+						<option value="">-- Same as original --</option>
+						<c:forEach items="${itemTypes}" var="t">
+							<option value="${t.typeId}">${t.typeName}
+								(ID:${t.typeId})</option>
+						</c:forEach>
+					</select>
 				</div>
 
 				<div class="col-md-3">
@@ -78,25 +88,31 @@
 						type="text" id="globalNamePrefix" class="form-control"
 						placeholder="My New Item" />
 				</div>
+
 			</div>
 		</div>
 
 		<!-- ================= ITEMS ================= -->
 		<div class="card shadow-sm">
-			<div class="card-header">
-				<strong>Preview & Edit Items</strong>
+			<div
+				class="card-header d-flex justify-content-between align-items-center">
+				<strong>Items</strong>
+				<button type="button" class="btn btn-sm btn-outline-primary"
+					id="btnAddRow">+ Add Item</button>
 			</div>
 
 			<div class="card-body p-0">
 				<table class="table table-striped mb-0" id="cloneTable">
 					<thead class="table-dark">
 						<tr>
-							<th>Original ID</th>
+							<th>Original</th>
 							<th>New Item ID</th>
 							<th>Name</th>
+							<th>Type</th>
 							<th>Job</th>
 							<th>Rarity</th>
 							<th>Req Lv</th>
+							<th style="width: 120px">Action</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -113,6 +129,15 @@
 								<td><input type="text" class="form-control itemName"
 									name="name_${e.itemId}" value="${e.name}"
 									data-original="${e.name}" /></td>
+
+								<td><select class="form-select typeSelect"
+									name="typeId_${e.itemId}">
+										<c:forEach items="${itemTypes}" var="t">
+											<option value="${t.typeId}"
+												${t.typeId == e.typeId ? 'selected' : ''}>
+												${t.typeName}</option>
+										</c:forEach>
+								</select></td>
 
 								<td><select class="form-select jobSelect"
 									name="jobId_${e.itemId}">
@@ -134,6 +159,11 @@
 								<td><input type="number" class="form-control reqLvInput"
 									name="requiredLevel_${e.itemId}" value="${e.requiredLevel}" />
 								</td>
+
+								<td class="text-center">
+									<button type="button"
+										class="btn btn-sm btn-danger btn-delete-row">Delete</button>
+								</td>
 							</tr>
 						</c:forEach>
 
@@ -141,10 +171,7 @@
 				</table>
 			</div>
 
-			<div class="card-footer d-flex justify-content-between">
-				<a href="${pageContext.request.contextPath}/master/equipment"
-					class="btn btn-secondary">Cancel</a>
-
+			<div class="card-footer text-end">
 				<button class="btn btn-success"
 					onclick="return confirm('Clone all items in this set?');">
 					Clone Set</button>
@@ -153,57 +180,137 @@
 	</form>
 </c:if>
 
-<!-- ================= JS ================= -->
+<!-- ================= ROW TEMPLATE (NEW ITEM) ================= -->
+<script type="text/template" id="rowTemplate">
+<tr>
+	<td>
+		NEW
+		<input type="hidden" name="originalItemId" value="0"/>
+	</td>
+	<td>
+		<input type="number" class="form-control newItemId" name="newItemId" required/>
+	</td>
+	<td>
+		<input type="text" class="form-control itemName" name="name_0"/>
+	</td>
+	<td>
+		<select class="form-select typeSelect" name="typeId_0" required>
+			<option value="">-- Select Type --</option>
+			<c:forEach items="${itemTypes}" var="t">
+				<option value="${t.typeId}">
+					${t.typeName}
+				</option>
+			</c:forEach>
+		</select>
+	</td>
+	<td>
+		<select class="form-select jobSelect" name="jobId_0">
+			<c:forEach items="${jobs}" var="j">
+				<option value="${j.id}">${j.name}</option>
+			</c:forEach>
+		</select>
+	</td>
+	<td>
+		<select class="form-select raritySelect" name="rarityId_0">
+			<c:forEach items="${rarities}" var="r">
+				<option value="${r.rarityId}" data-color="${r.color}">
+					${r.rarityName}
+				</option>
+			</c:forEach>
+		</select>
+	</td>
+	<td>
+		<input type="number" class="form-control reqLvInput"
+			name="requiredLevel_0"/>
+	</td>
+	<td class="text-center">
+		<button type="button" class="btn btn-sm btn-danger btn-delete-row">
+			Delete
+		</button>
+	</td>
+</tr>
+</script>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
-	/* ===== New Item ID from Global Set ID ===== */
+	let newIndex = 1;
+
+	/* ================= APPLY GLOBAL ================= */
+	function applyGlobalValues($rows) {
+
+		const gType = $('#globalType').val();
+		const gJob = $('#globalJob').val();
+		const gRarity = $('#globalRarity').val();
+		const gLv = $('#globalReqLv').val();
+		const prefix = $('#globalNamePrefix').val().trim();
+
+		if (gType)
+			$rows.find('.typeSelect').val(gType);
+		if (gJob)
+			$rows.find('.jobSelect').val(gJob);
+		if (gRarity)
+			$rows.find('.raritySelect').val(gRarity).trigger('change');
+		if (gLv)
+			$rows.find('.reqLvInput').val(gLv);
+
+		if (prefix) {
+			$rows.find('.itemName').each(function() {
+				const original = $(this).data('original');
+				if (!original)
+					return;
+				const last = original.trim().split(/\s+/).pop();
+				$(this).val(prefix + ' ' + last);
+			});
+		}
+	}
+
+	/* ================= GLOBAL HANDLERS ================= */
+	$('#globalType, #globalJob, #globalRarity, #globalReqLv, #globalNamePrefix')
+			.on('change input', function() {
+				applyGlobalValues($('#cloneTable tbody'));
+			});
+
+	/* ================= NEW ITEM ID ================= */
 	$('#globalSetId').on('input', function() {
-		let prefix = $(this).val();
+		let p = $(this).val();
 		let i = 1;
 		$('.newItemId').each(function() {
-			$(this).val(prefix + String(i).padStart(4, '0'));
-			i++;
+			$(this).val(p + String(i++).padStart(4, '0'));
 		});
 	});
 
-	/* ===== Global Job ===== */
-	$('#globalJob').on('change', function() {
-		if (this.value)
-			$('.jobSelect').val(this.value);
+	/* ================= ADD ROW ================= */
+	$('#btnAddRow').on(
+			'click',
+			function() {
+
+				let idx = 'n' + newIndex++;
+
+				let html = $('#rowTemplate').html().replaceAll('name_0',
+						'name_' + idx).replaceAll('typeId_0', 'typeId_' + idx)
+						.replaceAll('jobId_0', 'jobId_' + idx).replaceAll(
+								'rarityId_0', 'rarityId_' + idx).replaceAll(
+								'requiredLevel_0', 'requiredLevel_' + idx);
+
+				let $row = $(html);
+				applyGlobalValues($row);
+
+				$('#cloneTable tbody').append($row);
+				$('#globalSetId').trigger('input');
+			});
+
+	/* ================= DELETE ROW ================= */
+	$(document).on('click', '.btn-delete-row', function() {
+		if (!confirm('Delete this item row?'))
+			return;
+		$(this).closest('tr').remove();
+		$('#globalSetId').trigger('input');
 	});
 
-	/* ===== Global Rarity ===== */
-	$('#globalRarity').on('change', function() {
-		if (this.value)
-			$('.raritySelect').val(this.value).trigger('change');
-	});
-
-	/* ===== Global Req Lv ===== */
-	$('#globalReqLv').on('input', function() {
-		if (this.value)
-			$('.reqLvInput').val(this.value);
-	});
-
-	/* ===== Global Name Prefix (USE LAST WORD ONLY) ===== */
-	$('#globalNamePrefix').on('input', function() {
-		const prefix = $(this).val().trim();
-
-		$('.itemName').each(function() {
-			const original = $(this).data('original');
-			if (!original)
-				return;
-
-			const parts = original.trim().split(/\s+/);
-			const lastWord = parts[parts.length - 1];
-
-			$(this).val(prefix ? prefix + ' ' + lastWord : original);
-		});
-	});
-
-	/* ===== Rarity color ===== */
+	/* ================= RARITY COLOR ================= */
 	$(document).on('change', '.raritySelect', function() {
 		const color = $(this).find(':selected').data('color');
-		$(this).css('color', color);
+		$(this).css('color', color || '');
 	}).trigger('change');
 </script>
