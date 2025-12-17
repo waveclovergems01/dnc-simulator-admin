@@ -8,6 +8,7 @@ public class SuffixItem {
 	private Long itemId;
 	private Integer suffixTypeId;
 	private String name;
+	private Integer tier;
 
 	private List<SuffixItemAbility> abilities;
 	private List<SuffixItemExtraStat> extraStats;
@@ -60,4 +61,13 @@ public class SuffixItem {
 	public void setExtraStats(List<SuffixItemExtraStat> extraStats) {
 		this.extraStats = extraStats;
 	}
+
+	public Integer getTier() {
+		return tier;
+	}
+
+	public void setTier(Integer tier) {
+		this.tier = tier;
+	}
+	
 }

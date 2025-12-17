@@ -25,7 +25,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 	@Override
 	public List<SuffixItem> findAll() {
 
-		String sql = "SELECT id, item_id, suffix_type_id, name " + "FROM m_suffix_items "
+		String sql = "SELECT id, item_id, suffix_type_id, name, tier " + "FROM m_suffix_items "
 				+ "ORDER BY item_id, suffix_type_id";
 
 		return jdbcTemplate.query(sql, (rs, i) -> {
@@ -34,6 +34,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 			s.setItemId(rs.getLong("item_id"));
 			s.setSuffixTypeId(rs.getInt("suffix_type_id"));
 			s.setName(rs.getString("name"));
+			s.setTier(rs.getInt("tier"));
 			return s;
 		});
 	}
@@ -41,7 +42,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 	@Override
 	public SuffixItem findById(Long id) {
 
-		String sql = "SELECT id, item_id, suffix_type_id, name " + "FROM m_suffix_items " + "WHERE id = ?";
+		String sql = "SELECT id, item_id, suffix_type_id, name, tier " + "FROM m_suffix_items " + "WHERE id = ?";
 
 		SuffixItem result = jdbcTemplate.queryForObject(sql, (rs, i) -> {
 			SuffixItem s = new SuffixItem();
@@ -49,6 +50,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 			s.setItemId(rs.getLong("item_id"));
 			s.setSuffixTypeId(rs.getInt("suffix_type_id"));
 			s.setName(rs.getString("name"));
+			s.setTier(rs.getInt("tier"));
 			return s;
 		}, id);
 
@@ -68,7 +70,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 	@Override
 	public List<SuffixItem> findByItemId(Long itemId) {
 
-		String sql = "SELECT id, item_id, suffix_type_id, name " + "FROM m_suffix_items " + "WHERE item_id = ? "
+		String sql = "SELECT id, item_id, suffix_type_id, name, tier " + "FROM m_suffix_items " + "WHERE item_id = ? "
 				+ "ORDER BY suffix_type_id";
 
 		return jdbcTemplate.query(sql, (rs, i) -> {
@@ -77,6 +79,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 			s.setItemId(rs.getLong("item_id"));
 			s.setSuffixTypeId(rs.getInt("suffix_type_id"));
 			s.setName(rs.getString("name"));
+			s.setTier(rs.getInt("tier"));
 			return s;
 		}, itemId);
 	}
@@ -87,9 +90,9 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 		if (item.getId() == null) {
 
 			// INSERT (new suffix for this item)
-			String sql = "INSERT INTO m_suffix_items (item_id, suffix_type_id, name) " + "VALUES (?, ?, ?)";
+			String sql = "INSERT INTO m_suffix_items (item_id, suffix_type_id, name, tier) " + "VALUES (?, ?, ?, ?)";
 
-			jdbcTemplate.update(sql, item.getItemId(), item.getSuffixTypeId(), item.getName());
+			jdbcTemplate.update(sql, item.getItemId(), item.getSuffixTypeId(), item.getName(), item.getTier());
 
 		} else {
 
@@ -105,7 +108,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 
 		if (item.getId() == null) {
 
-			String sql = "INSERT INTO m_suffix_items (item_id, suffix_type_id, name) " + "VALUES (?, ?, ?)";
+			String sql = "INSERT INTO m_suffix_items (item_id, suffix_type_id, name, tier) " + "VALUES (?, ?, ?, ?)";
 
 			KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -114,6 +117,7 @@ public class SuffixItemRepositoryImpl implements SuffixItemRepository {
 				ps.setLong(1, item.getItemId());
 				ps.setInt(2, item.getSuffixTypeId());
 				ps.setString(3, item.getName());
+				ps.setInt(4, item.getTier());
 				return ps;
 			}, keyHolder);
 
