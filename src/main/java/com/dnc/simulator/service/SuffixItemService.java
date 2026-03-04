@@ -12,8 +12,10 @@ public interface SuffixItemService {
 	List<SuffixItem> getByItemId(Long itemId);
 
 	void save(SuffixItem item);
-	
+
 	public Long saveAndReturnId(SuffixItem item);
 
 	void delete(Long id);
+
+	public void cloneTier1WithStats(Long itemId, Integer targetTier);
 }

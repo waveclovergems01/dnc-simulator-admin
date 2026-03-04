@@ -1,10 +1,6 @@
 package com.dnc.simulator.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -19,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.dnc.simulator.model.JsonExportConfig;
 import com.dnc.simulator.service.JsonExportConfigService;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 @Controller
 public class JsonExportController {
@@ -38,7 +38,6 @@ public class JsonExportController {
 		List<JsonExportConfig> configs = jsonExportConfigService.getAllConfigs();
 
 		model.addAttribute("configs", configs);
-
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/json/export.jsp");
 		model.addAttribute("activeMenuGroup", "json");
 		model.addAttribute("activeMenu", "export");
@@ -55,54 +54,36 @@ public class JsonExportController {
 			return;
 		}
 
-		File downloadDir = new File(System.getProperty("user.home"), "Downloads");
-		if (!downloadDir.exists()) {
-			downloadDir.mkdirs();
-		}
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-		File zipFile = new File(downloadDir, "json_export.zip");
-		ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(zipFile));
+		response.setContentType("application/zip");
+		response.setHeader("Content-Disposition", "attachment; filename=\"json_export.zip\"");
+
+		// ⭐ zip เขียนเข้า response ตรง ๆ
+		ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream());
 
 		for (Integer id : exportIds) {
 
 			JsonExportConfig config = jsonExportConfigService.getConfigById(id);
-
 			if (config == null) {
 				continue;
 			}
 
-			// 🔑 execute SQL → JSON string (1 row / 1 column)
 			String json = jsonExportConfigService.runExportSql(id);
-
-			if (json == null) {
+			if (json == null || json.trim().isEmpty()) {
 				continue;
 			}
 
-			File jsonFile = new File(downloadDir, config.getExportFileName());
+			JsonElement jsonElement = JsonParser.parseString(json);
+			String prettyJson = gson.toJson(jsonElement);
 
-			Files.write(jsonFile.toPath(), json.getBytes(StandardCharsets.UTF_8));
-
-			zipOut.putNextEntry(new ZipEntry(jsonFile.getName()));
-			zipOut.write(Files.readAllBytes(jsonFile.toPath()));
+			zipOut.putNextEntry(new ZipEntry(config.getExportFileName()));
+			zipOut.write(prettyJson.getBytes(StandardCharsets.UTF_8));
 			zipOut.closeEntry();
 		}
 
+		zipOut.finish();
 		zipOut.close();
-
-		// ⬇️ download zip (Java 8 compatible)
-		response.setContentType("application/zip");
-		response.setHeader("Content-Disposition", "attachment; filename=\"json_export.zip\"");
-
-		FileInputStream fis = new FileInputStream(zipFile);
-		byte[] buffer = new byte[4096];
-		int len;
-
-		while ((len = fis.read(buffer)) != -1) {
-			response.getOutputStream().write(buffer, 0, len);
-		}
-
-		response.getOutputStream().flush();
-		fis.close();
 	}
 
 }

@@ -26,3 +26,4 @@ replay_pid*
 .settings/
 db/dnc-simulator.db-shm
 db/dnc-simulator.db-wal
+/.metadata/

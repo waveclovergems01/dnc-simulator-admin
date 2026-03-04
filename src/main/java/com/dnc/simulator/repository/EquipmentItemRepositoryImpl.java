@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import com.dnc.simulator.model.*;
 import com.dnc.simulator.repository.EquipmentItemRepository;
+import com.google.gson.Gson;
 
 @Repository
 public class EquipmentItemRepositoryImpl implements EquipmentItemRepository {
@@ -110,6 +111,8 @@ public class EquipmentItemRepositoryImpl implements EquipmentItemRepository {
 		String sql = "INSERT INTO m_equipment_item_stats " + "(item_id, stat_id, value_min, value_max, is_percentage) "
 				+ "VALUES (?, ?, ?, ?, ?)";
 
+		System.out.println("EquipmentItemStat : " + new Gson().toJson(stat));
+		
 		jdbcTemplate.update(sql, stat.getItemId(), stat.getStatId(), stat.getValueMin(), stat.getValueMax(),
 				stat.getIsPercentage());
 	}

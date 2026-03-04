@@ -108,19 +108,19 @@
 					</select></td>
 
 					<td><input type="number" class="form-control value-min"
-						step="${s.isPercentage == 1 ? 'any' : '1'}" inputmode="decimal"
+						step="${s.isPercentage == 1 ? 'any' : '1'}"
 						name="stats[${st.index}].valueMin"
 						value="${s.isPercentage == 1
-							? s.valueMin
-							: fn:substringBefore(s.valueMin, '.')}" />
+								? s.valueMin
+								: fn:substringBefore(s.valueMin, '.')}" />
 					</td>
 
 					<td><input type="number" class="form-control value-max"
-						step="${s.isPercentage == 1 ? 'any' : '1'}" inputmode="decimal"
+						step="${s.isPercentage == 1 ? 'any' : '1'}"
 						name="stats[${st.index}].valueMax"
 						value="${s.isPercentage == 1
-							? s.valueMax
-							: fn:substringBefore(s.valueMax, '.')}" />
+								? s.valueMax
+								: fn:substringBefore(s.valueMax, '.')}" />
 					</td>
 
 					<td class="text-center"><input type="checkbox"
@@ -146,14 +146,13 @@
 	<div class="d-flex justify-content-between mt-4">
 		<a href="${pageContext.request.contextPath}/master/equipment"
 			class="btn btn-secondary">Back</a>
-
 		<button type="submit" class="btn btn-success">Save</button>
 	</div>
 </form>
 
 <!-- ================= JS ================= -->
 <script>
-let statIndex = ${item.stats != null ? item.stats.size() : 0};
+let statIndex = document.querySelectorAll('#statTableBody tr').length;
 
 /* ===== add stat row ===== */
 function addStatRow() {
@@ -161,8 +160,7 @@ function addStatRow() {
 	const row = `
 	<tr>
 		<td>
-			<select name="stats[` + statIndex + `].statId"
-					class="form-select">
+			<select name="stats[` + statIndex + `].statId" class="form-select">
 				<option value="">-- Select Stat --</option>
 				<c:forEach items="${stats}" var="stat">
 					<option value="${stat.statId}">
@@ -176,7 +174,6 @@ function addStatRow() {
 			<input type="number"
 				class="form-control value-min"
 				step="1"
-				inputmode="decimal"
 				name="stats[` + statIndex + `].valueMin" />
 		</td>
 
@@ -184,7 +181,6 @@ function addStatRow() {
 			<input type="number"
 				class="form-control value-max"
 				step="1"
-				inputmode="decimal"
 				name="stats[` + statIndex + `].valueMax" />
 		</td>
 
@@ -204,89 +200,73 @@ function addStatRow() {
 	</tr>`;
 
 	$('#statTableBody').append(row);
-	statIndex++;
+	recalcStatIndex();
 }
 
 /* ===== remove row ===== */
 function removeRow(btn) {
 	$(btn).closest('tr').remove();
+	recalcStatIndex();
+}
+
+/* ===== recalc index ===== */
+function recalcStatIndex() {
+	statIndex = document.querySelectorAll('#statTableBody tr').length;
+}
+
+/* ===== reindex before submit ===== */
+function reindexStats() {
+	const rows = document.querySelectorAll('#statTableBody tr');
+	rows.forEach((row, i) => {
+		row.querySelectorAll('input, select').forEach(el => {
+			if (el.name) {
+				el.name = el.name.replace(/stats\[\d+\]/, 'stats[' + i + ']');
+			}
+		});
+	});
 }
 
 /* ===== toggle percentage ===== */
-function onPercentageToggle(checkbox) {
+function onPercentageToggle(cb) {
+	const row = cb.closest('tr');
+	const min = row.querySelector('.value-min');
+	const max = row.querySelector('.value-max');
 
-	const row = checkbox.closest('tr');
-	const minInput = row.querySelector('.value-min');
-	const maxInput = row.querySelector('.value-max');
-
-	if (!minInput || !maxInput) return;
-
-	if (checkbox.checked) {
-		// allow decimal
-		minInput.step = 'any';
-		maxInput.step = 'any';
+	if (cb.checked) {
+		min.step = 'any';
+		max.step = 'any';
 	} else {
-		// integer only
-		minInput.step = '1';
-		maxInput.step = '1';
-
-		if (minInput.value !== '') {
-			const v = Math.trunc(Number(minInput.value));
-			minInput.value = v;
-			minInput.setAttribute('value', v);
-		}
-		if (maxInput.value !== '') {
-			const v = Math.trunc(Number(maxInput.value));
-			maxInput.value = v;
-			maxInput.setAttribute('value', v);
-		}
+		min.step = '1';
+		max.step = '1';
+		min.value = Math.trunc(min.value || 0);
+		max.value = Math.trunc(max.value || 0);
 	}
 }
 
-/* ===== validation before submit ===== */
+/* ===== validation ===== */
 function validateEquipmentForm() {
+
+	reindexStats(); // ⭐ KEY POINT
 
 	const rows = document.querySelectorAll('#statTableBody tr');
 
 	for (let i = 0; i < rows.length; i++) {
 
-		const statSelect = rows[i].querySelector('select');
-		const minInput  = rows[i].querySelector('.value-min');
-		const maxInput  = rows[i].querySelector('.value-max');
-		const isPercent = rows[i].querySelector('.is-percentage');
+		const stat = rows[i].querySelector('select');
+		const min  = rows[i].querySelector('.value-min');
+		const max  = rows[i].querySelector('.value-max');
 
-		if (!statSelect || statSelect.value === '') {
-			alert('Stat #' + (i + 1) + ': Please select a Stat.');
-			statSelect.focus();
+		if (!stat.value) {
+			alert('Stat #' + (i + 1) + ' is required');
+			stat.focus();
 			return false;
 		}
-
-		if (!minInput || minInput.value.trim() === '') {
-			alert('Stat #' + (i + 1) + ': Min value is required.');
-			minInput.focus();
+		if (min.value === '' || max.value === '') {
+			alert('Stat #' + (i + 1) + ' Min/Max is required');
 			return false;
 		}
-
-		if (!maxInput || maxInput.value.trim() === '') {
-			alert('Stat #' + (i + 1) + ': Max value is required.');
-			maxInput.focus();
-			return false;
-		}
-
-		let minVal = parseFloat(minInput.value);
-		let maxVal = parseFloat(maxInput.value);
-
-		if (!isPercent.checked) {
-			minVal = Math.trunc(minVal);
-			maxVal = Math.trunc(maxVal);
-			minInput.value = minVal;
-			maxInput.value = maxVal;
-		}
-
-		if (minVal > maxVal) {
-			alert('Stat #' + (i + 1) +
-			      ': Min value must not be greater than Max value.');
-			minInput.focus();
+		if (parseFloat(min.value) > parseFloat(max.value)) {
+			alert('Stat #' + (i + 1) + ' Min > Max');
 			return false;
 		}
 	}

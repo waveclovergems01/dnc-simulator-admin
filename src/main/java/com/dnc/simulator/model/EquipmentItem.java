@@ -1,9 +1,14 @@
 package com.dnc.simulator.model;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class EquipmentItem {
+public class EquipmentItem implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 993345518947621898L;
 	private Long itemId;
 	private String name;
 	private Integer typeId;

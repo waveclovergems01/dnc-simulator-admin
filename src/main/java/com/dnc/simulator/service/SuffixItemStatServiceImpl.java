@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.dnc.simulator.model.SuffixItem;
 import com.dnc.simulator.model.SuffixItemAbility;
 import com.dnc.simulator.model.SuffixItemAbilityStat;
 import com.dnc.simulator.model.SuffixItemExtraStat;
@@ -174,16 +175,19 @@ public class SuffixItemStatServiceImpl implements SuffixItemStatService {
 			abilityStatRepository.deleteByAbilityId(abilityId);
 		}
 	}
-	
+
 	@Override
 	public void deleteAbilityBySuffixItemId(Integer suffixItemId) {
 		if (suffixItemId != null && suffixItemId > 0) {
 			List<SuffixItemAbility> ability = abilityRepository.findBySuffixItemId(suffixItemId);
-			if(ability != null && !ability.isEmpty()) {
+			if (ability != null && !ability.isEmpty()) {
 				abilityStatRepository.deleteByAbilityId(ability.get(0).getAbilityId());
 				abilityRepository.deleteBySuffixItemId(ability.get(0).getSuffixItemId());
 			}
-			
+
 		}
 	}
+
+	
+
 }

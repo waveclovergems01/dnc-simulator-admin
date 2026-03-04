@@ -62,17 +62,19 @@
 							Suffix Items </a></li>
 
 					<li><a
-						class="nav-link ${activeMenu == 'set-bonus' ? 'active' : ''}"
+						class="nav-link ${activeMenu == 'setBonus' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/set-bonus">
 							Set Bonus </a></li>
 
 				</ul>
-			</div></li>
-		<li class="nav-item"><a
-			class="nav-link d-flex justify-content-between align-items-center
-	               ${activeMenuGroup == 'json' ? 'active' : ''}"
-			data-bs-toggle="collapse" href="#jsonMenu"> 🗂 JSON Data <span>▾</span>
-		</a>
+			</div>
+		</li>
+		<!-- Json Data -->
+		<li class="nav-item">
+			<a class="nav-link d-flex justify-content-between align-items-center
+		               ${activeMenuGroup == 'json' ? 'active' : ''}"
+				data-bs-toggle="collapse" href="#jsonMenu"> 🗂 JSON Data <span>▾</span>
+			</a>
 
 			<div class="collapse ${activeMenuGroup == 'json' ? 'show' : ''}"
 				id="jsonMenu">
@@ -83,7 +85,27 @@
 						href="${pageContext.request.contextPath}/json/export"> Export
 					</a></li>
 				</ul>
-			</div></li>
+			</div>
+		</li>
+		
+		<!-- App -->
+		<li class="nav-item">
+			<a class="nav-link d-flex justify-content-between align-items-center
+		               ${activeMenuGroup == 'app' ? 'active' : ''}"
+				data-bs-toggle="collapse" href="#app"> 🗂 App <span>▾</span>
+			</a>
+
+			<div class="collapse ${activeMenuGroup == 'app' ? 'show' : ''}"
+				id="app">
+				<ul class="nav flex-column ms-3 mt-1">
+
+					<li><a
+						class="nav-link ${activeMenu == 'charfollow' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/app/charfollow"> Character Follow Active
+					</a></li>
+				</ul>
+			</div>
+		</li>
 
 		<!-- Users -->
 		<li class="nav-item"><a
