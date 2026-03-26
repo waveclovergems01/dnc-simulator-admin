@@ -65,6 +65,16 @@
 						class="nav-link ${activeMenu == 'setBonus' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/set-bonus">
 							Set Bonus </a></li>
+					
+					<li><a
+						class="nav-link ${activeMenu == 'plate' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/plate/viewPlate">
+							Plates </a></li>
+							
+					<li><a
+						class="nav-link ${activeMenu == 'patch' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/patch/viewPatchLevel">
+							Patch </a></li>
 
 				</ul>
 			</div>
