@@ -12,6 +12,8 @@
 	<div class="ms-auto d-flex gap-2">
 		<a href="${pageContext.request.contextPath}/master/plate/addType"
 			class="btn btn-primary"> + Add Type </a>
+		<a href="${pageContext.request.contextPath}/master/plate/viewPlate"
+		class="btn btn-secondary"> Back </a>
 	</div>
 </div>
 

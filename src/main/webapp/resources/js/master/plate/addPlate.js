@@ -2,148 +2,156 @@
 
 	$(function() {
 
-		// ===== Plate Name Input Control (Title Case) =====
-		$(document).on("input", ".plate-name-input", function() {
-
-			let val = $(this).val() || "";
-
-			// allow only letters and space
-			val = val.replace(/[^a-zA-Z ]/g, "");
-
-			// remove multiple spaces
-			val = val.replace(/\s{2,}/g, " ");
-
-			// remove leading space
-			val = val.replace(/^\s+/g, "");
-
-			// Title Case
-			val = val.split(" ").map(function(word) {
-
-				if (word.length === 0) return "";
-
-				return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-
-			}).join(" ");
-
-			$(this).val(val);
-
-		});
-
-
-		// ===== Icon Preview =====
-		$("#iconFile").on("change", function() {
-
-			var file = this.files && this.files.length > 0 ? this.files[0] : null;
-
-			if (!file) {
-				$("#iconPreview").hide().attr("src", "");
-				return;
-			}
-
-			// validate type
-			var allow = ["image/png", "image/jpeg", "image/webp"];
-			if (allow.indexOf(file.type) === -1) {
-				alert("Icon must be PNG/JPG/WEBP");
-				$(this).val("");
-				$("#iconPreview").hide().attr("src", "");
-				return;
-			}
-
-			// validate size 2MB
-			var maxBytes = 2 * 1024 * 1024;
-			if (file.size > maxBytes) {
-				alert("Icon file too large (max 2MB)");
-				$(this).val("");
-				$("#iconPreview").hide().attr("src", "");
-				return;
-			}
-
-			var url = URL.createObjectURL(file);
-			$("#iconPreview").attr("src", url).show();
-
-		});
-
-
-		// ===== Submit =====
-		$("#plateForm").submit(function(e) {
-			e.preventDefault();
-
-			var id = $("#id").val();
-
-			// get values
-			var plateName = ($("#plateName").val() || "").trim();
+		function toggleStatDropdown() {
 			var plateTypeId = ($("#plateTypeId").val() || "").trim();
-			var plateLevelId = ($("#plateLevelId").val() || "").trim();
-			var rarityId = ($("#rarityId").val() || "").trim();
 
-			// validate plate name: A-Z words separated by single spaces
-			if (plateName === "") {
-				alert("Plate Name is required");
-				return;
+			if (plateTypeId === "1") {
+				$("#statDropdownWrapper").show();
+			} else {
+				$("#statDropdownWrapper").hide();
+				$("#statId").val("");
+				$("#statValue").val("");
+				$("#statPercent").val("");
 			}
-			if (!/^[A-Za-z]+( [A-Za-z]+)*$/.test(plateName)) {
-				alert("Plate Name must contain only English words separated by spaces");
-				return;
-			}
+		}
 
-			// validate dropdowns
-			if (plateTypeId === "" || !/^\d+$/.test(plateTypeId)) {
-				alert("Plate Type is required");
-				return;
-			}
-			if (plateLevelId === "" || !/^\d+$/.test(plateLevelId)) {
-				alert("Plate Level is required");
-				return;
-			}
-			if (rarityId === "" || !/^\d+$/.test(rarityId)) {
-				alert("Rarity is required");
+		function updatePlateNamePreview() {
+			var selected = $("#plateNameId option:selected");
+			var iconUrl = selected.attr("data-icon-url") || "";
+			var plateNameId = ($("#plateNameId").val() || "").trim();
+
+			if (plateNameId === "" || iconUrl === "") {
+				$("#plateNamePreview").hide().attr("src", "");
 				return;
 			}
 
-			// build multipart form
-			var fd = new FormData();
-			fd.append("plateName", plateName);
-			fd.append("plateTypeId", plateTypeId);
-			fd.append("plateLevelId", plateLevelId);
-			fd.append("rarityId", rarityId);
+			$("#plateNamePreview").attr("src", iconUrl).show();
+		}
 
-			if (id) {
-				fd.append("id", id);
-			}
-
-			// icon file (optional)
-			var iconFile = $("#iconFile")[0].files && $("#iconFile")[0].files.length > 0
-				? $("#iconFile")[0].files[0]
-				: null;
-
-			if (iconFile) {
-				fd.append("iconFile", iconFile);
-			}
-
-			$("#btnSave").prop("disabled", true);
-
-			$.ajax({
-				url: APP_CTX + "/master/plate/savePlate",
-				type: "POST",
-				data: fd,
-				processData: false,
-				contentType: false,
-				success: function(res) {
-					if (res === "SUCCESS") {
-						window.location.href = APP_CTX + "/master/plate/viewPlate";
-					} else {
-						alert(res);
-					}
-				},
-				error: function(xhr) {
-					alert((xhr && xhr.responseText) ? xhr.responseText : "ERROR");
-				},
-				complete: function() {
-					$("#btnSave").prop("disabled", false);
-				}
-			});
-
+		$(document).on("input", ".number-only-input", function() {
+			var val = $(this).val() || "";
+			val = val.replace(/\D/g, "");
+			$(this).val(val);
 		});
+
+		$(document).on(
+				"input",
+				".decimal-only-input",
+				function() {
+					var val = $(this).val() || "";
+					val = val.replace(/[^0-9.]/g, "");
+
+					var firstDot = val.indexOf(".");
+					if (firstDot !== -1) {
+						val = val.substring(0, firstDot + 1)
+								+ val.substring(firstDot + 1)
+										.replace(/\./g, "");
+					}
+
+					$(this).val(val);
+				});
+
+		$("#plateTypeId").on("change", function() {
+			toggleStatDropdown();
+		});
+
+		$("#plateNameId").on("change", function() {
+			updatePlateNamePreview();
+		});
+
+		toggleStatDropdown();
+		updatePlateNamePreview();
+
+		$("#plateForm").on(
+				"submit",
+				function(e) {
+					e.preventDefault();
+
+					var id = ($("#id").val() || "").trim();
+					var plateTypeId = ($("#plateTypeId").val() || "").trim();
+					var plateNameId = ($("#plateNameId").val() || "").trim();
+					var patchLevelId = ($("#patchLevelId").val() || "").trim();
+					var rarityId = ($("#rarityId").val() || "").trim();
+					var statId = ($("#statId").val() || "").trim();
+					var statValue = ($("#statValue").val() || "").trim();
+					var statPercent = ($("#statPercent").val() || "").trim();
+
+					if (plateTypeId === "" || !/^\d+$/.test(plateTypeId)) {
+						alert("Plate Type is required");
+						return;
+					}
+
+					if (plateNameId === "" || !/^\d+$/.test(plateNameId)) {
+						alert("Plate Name is required");
+						return;
+					}
+
+					if (patchLevelId === "" || !/^\d+$/.test(patchLevelId)) {
+						alert("Patch Level is required");
+						return;
+					}
+
+					if (rarityId === "" || !/^\d+$/.test(rarityId)) {
+						alert("Rarity is required");
+						return;
+					}
+
+					if (plateTypeId === "1") {
+						if (statId === "" || !/^\d+$/.test(statId)) {
+							alert("Stat is required when Plate Type is 1");
+							return;
+						}
+					}
+
+					if (statValue !== "" && !/^\d+$/.test(statValue)) {
+						alert("Value (Unit) must be numeric only");
+						return;
+					}
+
+					if (statPercent !== ""
+							&& !/^\d+(\.\d+)?$/.test(statPercent)) {
+						alert("Value (%) must be numeric only");
+						return;
+					}
+
+					var fd = new FormData();
+					fd.append("plateTypeId", plateTypeId);
+					fd.append("plateNameId", plateNameId);
+					fd.append("patchLevelId", patchLevelId);
+					fd.append("rarityId", rarityId);
+					fd.append("statId", statId);
+					fd.append("statValue", statValue);
+					fd.append("statPercent", statPercent);
+
+					if (id !== "") {
+						fd.append("id", id);
+					}
+
+					$("#btnSave").prop("disabled", true);
+
+					$.ajax({
+						url : APP_CTX + "/master/plate/savePlate",
+						type : "POST",
+						data : fd,
+						processData : false,
+						contentType : false,
+						success : function(res) {
+							if (res === "SUCCESS") {
+								window.location.href = APP_CTX
+										+ "/master/plate/viewPlate";
+							} else {
+								alert(res);
+							}
+						},
+						error : function(xhr) {
+							alert((xhr && xhr.responseText) ? xhr.responseText
+									: "ERROR");
+						},
+						complete : function() {
+							$("#btnSave").prop("disabled", false);
+						}
+					});
+				});
 
 	});
 

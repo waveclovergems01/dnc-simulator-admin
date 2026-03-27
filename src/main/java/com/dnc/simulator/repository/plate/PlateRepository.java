@@ -15,13 +15,13 @@ public interface PlateRepository {
 
 	Optional<Plate> findIconById(Long id);
 
-	Long insert(Long plateTypeId, Long plateLevelId, Integer rarityId, String plateName, byte[] iconBlob,
-			String iconMime, String iconName);
+	boolean existsDuplicate(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Long excludeId);
 
-	int update(Long id, Long plateTypeId, Long plateLevelId, Integer rarityId, String plateName, byte[] iconBlob,
-			String iconMime, String iconName);
+	Long insert(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+			Integer statValue, Double statPercent);
 
-	int updateNoIcon(Long id, Long plateTypeId, Long plateLevelId, Integer rarityId, String plateName);
+	int update(Long id, Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+			Integer statValue, Double statPercent);
 
 	int delete(Long id);
 }

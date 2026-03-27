@@ -1,6 +1,7 @@
 package com.dnc.simulator.controller.masterdata;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -16,10 +17,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dnc.simulator.model.Stat;
+import com.dnc.simulator.model.patch.PatchLevel;
 import com.dnc.simulator.model.plate.Plate;
+import com.dnc.simulator.model.plate.PlateName;
+import com.dnc.simulator.model.plate.PlateThirdStat;
 import com.dnc.simulator.service.RarityService;
+import com.dnc.simulator.service.StatService;
 import com.dnc.simulator.service.patch.PatchLevelService;
+import com.dnc.simulator.service.plate.PlateNameService;
 import com.dnc.simulator.service.plate.PlateService;
+import com.dnc.simulator.service.plate.PlateThirdStatService;
 import com.dnc.simulator.service.plate.PlateTypeService;
 
 @Controller
@@ -38,6 +46,15 @@ public class PlateController {
 	@Autowired
 	private RarityService rarityService;
 
+	@Autowired
+	private StatService statService;
+
+	@Autowired
+	private PlateThirdStatService plateThirdStatService;
+
+	@Autowired
+	private PlateNameService plateNameService;
+
 	@GetMapping("/viewPlate")
 	public String viewPlate(Model model) {
 
@@ -45,7 +62,8 @@ public class PlateController {
 		model.addAttribute("activeMenuGroup", "master");
 		model.addAttribute("activeMenu", "plate");
 
-		model.addAttribute("plateList", plateService.findAll());
+		List<Plate> list = plateService.findAll();
+		model.addAttribute("plateList", list);
 
 		return "layout/main";
 	}
@@ -58,10 +76,11 @@ public class PlateController {
 		model.addAttribute("activeMenu", "plate");
 
 		model.addAttribute("mode", "ADD");
-
 		model.addAttribute("typeList", plateTypeService.findAll());
+		model.addAttribute("plateNameList", plateNameService.findAll());
 		model.addAttribute("levelList", patchLevelService.findAll());
 		model.addAttribute("rarityList", rarityService.getAllRarities());
+		model.addAttribute("statList", statService.getAllStats());
 
 		return "layout/main";
 	}
@@ -69,21 +88,22 @@ public class PlateController {
 	@GetMapping("/editPlate")
 	public String editPlate(@RequestParam("id") Long id, Model model) {
 
+		Plate plate = plateService.findById(id);
+		if (plate == null) {
+			return "redirect:/master/plate/viewPlate";
+		}
+
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/addPlate.jsp");
 		model.addAttribute("activeMenuGroup", "master");
 		model.addAttribute("activeMenu", "plate");
 
 		model.addAttribute("mode", "EDIT");
-
-		Plate plate = plateService.findById(id);
-		if (plate == null) {
-			return "redirect:/master/plate/viewPlate";
-		}
 		model.addAttribute("plate", plate);
-
 		model.addAttribute("typeList", plateTypeService.findAll());
+		model.addAttribute("plateNameList", plateNameService.findAll());
 		model.addAttribute("levelList", patchLevelService.findAll());
 		model.addAttribute("rarityList", rarityService.getAllRarities());
+		model.addAttribute("statList", statService.getAllStats());
 
 		return "layout/main";
 	}
@@ -91,73 +111,82 @@ public class PlateController {
 	@PostMapping("/savePlate")
 	@ResponseBody
 	public ResponseEntity<?> savePlate(@RequestParam(value = "id", required = false) Long id,
-			@RequestParam("plateTypeId") String plateTypeIdStr,
+			@RequestParam("plateTypeId") String plateTypeIdStr, @RequestParam("plateNameId") String plateNameIdStr,
 			@RequestParam("patchLevelId") String patchLevelIdStr, @RequestParam("rarityId") String rarityIdStr,
-			@RequestParam("plateName") String plateName,
-			@RequestParam(value = "iconFile", required = false) MultipartFile iconFile) {
+			@RequestParam(value = "statId", required = false) String statIdStr,
+			@RequestParam(value = "statValue", required = false) String statValueStr,
+			@RequestParam(value = "statPercent", required = false) String statPercentStr) {
 
 		try {
-			plateTypeIdStr = plateTypeIdStr == null ? "" : plateTypeIdStr.trim();
-			patchLevelIdStr = patchLevelIdStr == null ? "" : patchLevelIdStr.trim();
-			rarityIdStr = rarityIdStr == null ? "" : rarityIdStr.trim();
-			plateName = plateName == null ? "" : plateName.trim();
+			plateTypeIdStr = safeTrim(plateTypeIdStr);
+			plateNameIdStr = safeTrim(plateNameIdStr);
+			patchLevelIdStr = safeTrim(patchLevelIdStr);
+			rarityIdStr = safeTrim(rarityIdStr);
+			statIdStr = safeTrim(statIdStr);
+			statValueStr = safeTrim(statValueStr);
+			statPercentStr = safeTrim(statPercentStr);
 
-			if (plateTypeIdStr.isEmpty() || !plateTypeIdStr.matches("^\\d+$")) {
+			if (!isNumber(plateTypeIdStr)) {
 				return ResponseEntity.badRequest().body("Plate Type is required");
 			}
-			if (patchLevelIdStr.isEmpty() || !patchLevelIdStr.matches("^\\d+$")) {
+			if (!isNumber(plateNameIdStr)) {
+				return ResponseEntity.badRequest().body("Plate Name is required");
+			}
+			if (!isNumber(patchLevelIdStr)) {
 				return ResponseEntity.badRequest().body("Patch Level is required");
 			}
-			if (rarityIdStr.isEmpty() || !rarityIdStr.matches("^\\d+$")) {
+			if (!isNumber(rarityIdStr)) {
 				return ResponseEntity.badRequest().body("Rarity is required");
 			}
-			if (plateName.isEmpty()) {
-				return ResponseEntity.badRequest().body("Plate Name is required");
+
+			if ("1".equals(plateTypeIdStr) && !isNumber(statIdStr)) {
+				return ResponseEntity.badRequest().body("Stat is required when Plate Type is 1");
+			}
+
+			if (!statValueStr.isEmpty() && !statValueStr.matches("^\\d+$")) {
+				return ResponseEntity.badRequest().body("Value (Unit) must be numeric only");
+			}
+
+			if (!statPercentStr.isEmpty() && !statPercentStr.matches("^\\d+(\\.\\d+)?$")) {
+				return ResponseEntity.badRequest().body("Value (%) must be numeric only");
 			}
 
 			Long plateTypeId = Long.valueOf(plateTypeIdStr);
+			Long plateNameId = Long.valueOf(plateNameIdStr);
 			Long patchLevelId = Long.valueOf(patchLevelIdStr);
 			Integer rarityId = Integer.valueOf(rarityIdStr);
 
-			byte[] iconBlob = null;
-			String iconMime = null;
-			String iconName = null;
+			Integer statId = statIdStr.isEmpty() ? null : Integer.valueOf(statIdStr);
+			Integer statValue = statValueStr.isEmpty() ? null : Integer.valueOf(statValueStr);
+			Double statPercent = statPercentStr.isEmpty() ? null : Double.valueOf(statPercentStr);
 
-			boolean hasNewIcon = (iconFile != null && !iconFile.isEmpty());
-
-			if (hasNewIcon) {
-
-				String ct = iconFile.getContentType();
-				if (ct == null || !(ct.equals("image/png") || ct.equals("image/jpeg") || ct.equals("image/webp"))) {
-					return ResponseEntity.badRequest().body("Icon must be PNG/JPG/WEBP");
-				}
-
-				long maxBytes = 2L * 1024L * 1024L;
-				if (iconFile.getSize() > maxBytes) {
-					return ResponseEntity.badRequest().body("Icon file too large (max 2MB)");
-				}
-
-				iconBlob = iconFile.getBytes();
-				iconMime = ct;
-				iconName = iconFile.getOriginalFilename();
+			if (plateService.existsDuplicate(plateTypeId, patchLevelId, plateNameId, rarityId, id)) {
+				return ResponseEntity.badRequest()
+						.body("Duplicate plate: same Type + Patch Level + Plate Name + Rarity already exists");
 			}
 
-			// ===== save =====
 			if (id == null) {
-				plateService.create(plateTypeId, patchLevelId, rarityId, plateName, iconBlob, iconMime, iconName);
+				plateService.create(plateTypeId, patchLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 			} else {
-				if (hasNewIcon) {
-					plateService.update(id, plateTypeId, patchLevelId, rarityId, plateName, iconBlob, iconMime,
-							iconName);
-				} else {
-					plateService.updateNoIcon(id, plateTypeId, patchLevelId, rarityId, plateName);
-				}
+				plateService.update(id, plateTypeId, patchLevelId, plateNameId, rarityId, statId, statValue,
+						statPercent);
 			}
 
 			return ResponseEntity.ok("SUCCESS");
 
-		} catch (IOException e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Icon read error");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(e.getMessage() == null ? "ERROR" : e.getMessage());
+		}
+	}
+
+	@PostMapping("/deletePlate")
+	@ResponseBody
+	public ResponseEntity<?> deletePlate(@RequestParam("id") Long id) {
+
+		try {
+			plateService.delete(id);
+			return ResponseEntity.ok("SUCCESS");
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(e.getMessage() == null ? "ERROR" : e.getMessage());
@@ -168,32 +197,26 @@ public class PlateController {
 	public ResponseEntity<byte[]> plateIcon(@RequestParam("id") Long id) {
 
 		try {
-			Plate p = plateService.findIconById(id);
+			Plate plate = plateService.findIconById(id);
 
-			if (p == null || p.getIconBlob() == null || p.getIconBlob().length == 0) {
+			if (plate == null || plate.getIconBlob() == null || plate.getIconBlob().length == 0) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 			}
 
 			MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
-			if (p.getIconMime() != null && !p.getIconMime().trim().isEmpty()) {
-				mediaType = MediaType.parseMediaType(p.getIconMime());
+			if (plate.getIconMime() != null && !plate.getIconMime().trim().isEmpty()) {
+				mediaType = MediaType.parseMediaType(plate.getIconMime());
 			}
 
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(mediaType);
 			headers.setCacheControl("no-store, no-cache, must-revalidate, max-age=0");
 
-			return new ResponseEntity<>(p.getIconBlob(), headers, HttpStatus.OK);
+			return new ResponseEntity<>(plate.getIconBlob(), headers, HttpStatus.OK);
 
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
-	}
-
-	@PostMapping("/deletePlate")
-	public String deletePlate(@RequestParam("id") Long id) {
-		plateService.delete(id);
-		return "redirect:/master/plate/viewPlate";
 	}
 
 	@GetMapping("/viewType")
@@ -266,5 +289,296 @@ public class PlateController {
 		plateTypeService.delete(id);
 
 		return "redirect:/master/plate/viewType";
+	}
+
+	@GetMapping("/view3rdStat")
+	public String view3rdStat(Model model) {
+
+		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/view3rdStat.jsp");
+		model.addAttribute("activeMenuGroup", "master");
+		model.addAttribute("activeMenu", "plate");
+
+		model.addAttribute("thirdStatList", plateThirdStatService.findAll());
+
+		return "layout/main";
+	}
+
+	@GetMapping("/add3rdStat")
+	public String add3rdStat(Model model) {
+
+		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/add3rdStat.jsp");
+		model.addAttribute("activeMenuGroup", "master");
+		model.addAttribute("activeMenu", "plate");
+
+		model.addAttribute("mode", "ADD");
+		model.addAttribute("statList", statService.getAllStats());
+		model.addAttribute("rarityList", rarityService.getAllRarities());
+		model.addAttribute("levelList", patchLevelService.findAll());
+
+		return "layout/main";
+	}
+
+	@GetMapping("/edit3rdStat")
+	public String edit3rdStat(@RequestParam("id") Long id, Model model) {
+
+		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/add3rdStat.jsp");
+		model.addAttribute("activeMenuGroup", "master");
+		model.addAttribute("activeMenu", "plate");
+
+		PlateThirdStat thirdStat = plateThirdStatService.findById(id);
+		if (thirdStat == null) {
+			return "redirect:/master/plate/view3rdStat";
+		}
+
+		model.addAttribute("mode", "EDIT");
+		model.addAttribute("thirdStat", thirdStat);
+		model.addAttribute("statList", statService.getAllStats());
+		model.addAttribute("rarityList", rarityService.getAllRarities());
+		model.addAttribute("levelList", patchLevelService.findAll());
+
+		return "layout/main";
+	}
+
+	@PostMapping("/save3rdStat")
+	@ResponseBody
+	public ResponseEntity<?> save3rdStat(@RequestParam(value = "id", required = false) Long id,
+			@RequestParam("statId") String statIdStr, @RequestParam("rarityId") String rarityIdStr,
+			@RequestParam("patchLevelId") String patchLevelIdStr, @RequestParam("value") String valueStr) {
+
+		try {
+			statIdStr = statIdStr == null ? "" : statIdStr.trim();
+			rarityIdStr = rarityIdStr == null ? "" : rarityIdStr.trim();
+			patchLevelIdStr = patchLevelIdStr == null ? "" : patchLevelIdStr.trim();
+			valueStr = valueStr == null ? "" : valueStr.trim();
+
+			if (statIdStr.isEmpty() || !statIdStr.matches("^\\d+$")) {
+				return ResponseEntity.badRequest().body("Stat is required");
+			}
+
+			if (rarityIdStr.isEmpty() || !rarityIdStr.matches("^\\d+$")) {
+				return ResponseEntity.badRequest().body("Rarity is required");
+			}
+
+			if (patchLevelIdStr.isEmpty() || !patchLevelIdStr.matches("^\\d+$")) {
+				return ResponseEntity.badRequest().body("Patch Level is required");
+			}
+
+			if (valueStr.isEmpty() || !valueStr.matches("^\\d+$")) {
+				return ResponseEntity.badRequest().body("Value must be numeric only");
+			}
+
+			Integer statId = Integer.valueOf(statIdStr);
+			Integer rarityId = Integer.valueOf(rarityIdStr);
+			Long patchLevelId = Long.valueOf(patchLevelIdStr);
+			Integer value = Integer.valueOf(valueStr);
+
+			if (id == null) {
+				plateThirdStatService.create(statId, rarityId, patchLevelId, value);
+			} else {
+				plateThirdStatService.update(id, statId, rarityId, patchLevelId, value);
+			}
+
+			return ResponseEntity.ok("SUCCESS");
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(e.getMessage() == null ? "ERROR" : e.getMessage());
+		}
+	}
+
+	@PostMapping("/delete3rdStat")
+	public String delete3rdStat(@RequestParam("id") Long id) {
+		plateThirdStatService.delete(id);
+		return "redirect:/master/plate/view3rdStat";
+	}
+
+	@GetMapping("/viewPlateName")
+	public String viewPlateName(Model model) {
+
+		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/viewPlateName.jsp");
+		model.addAttribute("activeMenuGroup", "master");
+		model.addAttribute("activeMenu", "plate");
+
+		model.addAttribute("plateNameList", plateNameService.findAll());
+
+		return "layout/main";
+	}
+
+	@GetMapping("/addPlateName")
+	public String addPlateName(Model model) {
+
+		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/addPlateName.jsp");
+		model.addAttribute("activeMenuGroup", "master");
+		model.addAttribute("activeMenu", "plate");
+
+		model.addAttribute("mode", "ADD");
+
+		return "layout/main";
+	}
+
+	@GetMapping("/editPlateName")
+	public String editPlateName(@RequestParam("id") Long id, Model model) {
+
+		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/addPlateName.jsp");
+		model.addAttribute("activeMenuGroup", "master");
+		model.addAttribute("activeMenu", "plate");
+
+		model.addAttribute("mode", "EDIT");
+
+		PlateName plateName = plateNameService.findById(id);
+		if (plateName == null) {
+			return "redirect:/master/plate/viewPlateName";
+		}
+
+		model.addAttribute("plateName", plateName);
+
+		return "layout/main";
+	}
+
+	@PostMapping("/savePlateName")
+	@ResponseBody
+	public ResponseEntity<?> savePlateName(@RequestParam(value = "id", required = false) Long id,
+			@RequestParam("name") String name,
+			@RequestParam(value = "iconFile", required = false) MultipartFile iconFile) {
+
+		try {
+			name = name == null ? "" : name.trim();
+
+			if (name.isEmpty()) {
+				return ResponseEntity.badRequest().body("Plate Name is required");
+			}
+
+			if (!name.matches("^[A-Za-z]+( [A-Za-z]+)*$")) {
+				return ResponseEntity.badRequest()
+						.body("Plate Name must contain only English words separated by spaces");
+			}
+
+			byte[] iconBlob = null;
+			String iconMime = null;
+			String iconName = null;
+
+			String safePlateName = name.trim().toLowerCase();
+			safePlateName = safePlateName.replaceAll("\\s+", "_");
+			safePlateName = safePlateName.replaceAll("[^a-z0-9_]", "");
+			safePlateName = safePlateName.replaceAll("_+", "_");
+			safePlateName = safePlateName.replaceAll("^_+|_+$", "");
+
+			boolean hasNewIcon = (iconFile != null && !iconFile.isEmpty());
+
+			if (hasNewIcon) {
+				String ct = iconFile.getContentType();
+				if (ct == null || !(ct.equals("image/png") || ct.equals("image/jpeg") || ct.equals("image/webp"))) {
+					return ResponseEntity.badRequest().body("Icon must be PNG/JPG/WEBP");
+				}
+
+				long maxBytes = 2L * 1024L * 1024L;
+				if (iconFile.getSize() > maxBytes) {
+					return ResponseEntity.badRequest().body("Icon file too large (max 2MB)");
+				}
+
+				String ext = getFileExtension(iconFile.getOriginalFilename(), ct);
+
+				iconBlob = iconFile.getBytes();
+				iconMime = ct;
+				iconName = safePlateName + ext;
+			}
+
+			if (id == null) {
+				plateNameService.create(name, iconBlob, iconMime, iconName);
+			} else {
+				if (hasNewIcon) {
+					plateNameService.update(id, name, iconBlob, iconMime, iconName);
+				} else {
+					plateNameService.updateNoIcon(id, name);
+				}
+			}
+
+			return ResponseEntity.ok("SUCCESS");
+
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Icon read error");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(e.getMessage() == null ? "ERROR" : e.getMessage());
+		}
+	}
+
+	@GetMapping("/plateNameIcon")
+	public ResponseEntity<byte[]> plateNameIcon(@RequestParam("id") Long id) {
+
+		try {
+			PlateName x = plateNameService.findIconById(id);
+
+			if (x == null || x.getIconBlob() == null || x.getIconBlob().length == 0) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+			}
+
+			MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+			if (x.getIconMime() != null && !x.getIconMime().trim().isEmpty()) {
+				mediaType = MediaType.parseMediaType(x.getIconMime());
+			}
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(mediaType);
+			headers.setCacheControl("no-store, no-cache, must-revalidate, max-age=0");
+
+			return new ResponseEntity<>(x.getIconBlob(), headers, HttpStatus.OK);
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+
+	@PostMapping("/deletePlateName")
+	public String deletePlateName(@RequestParam("id") Long id) {
+
+		plateNameService.delete(id);
+
+		return "redirect:/master/plate/viewPlateName";
+	}
+
+	// =========================
+	// UTIL
+	// =========================
+	private String safeTrim(String s) {
+		return s == null ? "" : s.trim();
+	}
+
+	private boolean isNumber(String s) {
+		return s != null && s.matches("^\\d+$");
+	}
+
+	private ResponseEntity<String> ok() {
+		return ResponseEntity.ok("SUCCESS");
+	}
+
+	private ResponseEntity<String> bad(String msg) {
+		return ResponseEntity.badRequest().body(msg);
+	}
+
+	private ResponseEntity<String> error(Exception e) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(e.getMessage() == null ? "ERROR" : e.getMessage());
+	}
+
+	private String getFileExtension(String originalFilename, String contentType) {
+		if (originalFilename != null) {
+			int lastDot = originalFilename.lastIndexOf('.');
+			if (lastDot >= 0 && lastDot < originalFilename.length() - 1) {
+				return originalFilename.substring(lastDot).toLowerCase();
+			}
+		}
+
+		if ("image/png".equalsIgnoreCase(contentType)) {
+			return ".png";
+		}
+		if ("image/jpeg".equalsIgnoreCase(contentType)) {
+			return ".jpg";
+		}
+		if ("image/webp".equalsIgnoreCase(contentType)) {
+			return ".webp";
+		}
+
+		return "";
 	}
 }

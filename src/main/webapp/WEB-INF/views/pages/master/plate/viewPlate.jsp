@@ -12,10 +12,11 @@
 		<a href="${pageContext.request.contextPath}/master/plate/addPlate"
 			class="btn btn-primary"> + Add Plate </a> <a
 			href="${pageContext.request.contextPath}/master/plate/viewType"
-			class="btn btn-primary"> >> Plate Type </a>
-			<a
-			href="${pageContext.request.contextPath}/master/plate/viewType"
-			class="btn btn-primary"> >> Plate Name </a>
+			class="btn btn-primary"> >> Plate Type </a> <a
+			href="${pageContext.request.contextPath}/master/plate/viewPlateName"
+			class="btn btn-primary"> >> Plate Name </a> <a
+			href="${pageContext.request.contextPath}/master/plate/view3rdStat"
+			class="btn btn-primary"> >> Plate 3rd Stat </a>
 	</div>
 </div>
 
@@ -30,6 +31,7 @@
 			<th>Type</th>
 			<th style="width: 100px;">Level</th>
 			<th style="width: 140px;">Rarity</th>
+			<th style="width: 220px;">Stat</th>
 			<th style="width: 180px;">Action</th>
 		</tr>
 	</thead>
@@ -56,16 +58,24 @@
 						style="background:${fn:escapeXml(p.color)};">
 							${fn:escapeXml(p.rarityName)} </span></td>
 
+					<td><c:if test="${not empty p.statDisplayName}">
+							<div>${fn:escapeXml(p.statDisplayName)}</div>
+						</c:if> <c:if test="${p.statValue != null}">
+							<div>${p.statValue}</div>
+						</c:if> <c:if test="${p.statPercent != null}">
+							<div>${p.statPercent}%</div>
+						</c:if></td>
+
 					<td class="text-center"><a
 						href="${pageContext.request.contextPath}/master/plate/editPlate?id=${p.id}"
 						class="btn btn-sm btn-warning me-1"> Edit </a>
 
 						<form
 							action="${pageContext.request.contextPath}/master/plate/deletePlate"
-							method="post" style="display: inline;"
-							onsubmit="return confirm('Are you sure you want to delete this plate?');">
+							method="post" style="display: inline;" onsubmit="return false;">
 							<input type="hidden" name="id" value="${p.id}" />
-							<button type="submit" class="btn btn-sm btn-danger">Delete</button>
+							<button type="button"
+								class="btn btn-sm btn-danger btn-delete-plate" data-id="${p.id}">Delete</button>
 						</form></td>
 
 				</tr>

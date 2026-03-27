@@ -32,46 +32,39 @@ public class PlateServiceImpl implements PlateService {
 	}
 
 	@Override
-	public Long create(Long plateTypeId, Long plateLevelId, Integer rarityId, String plateName, byte[] iconBlob,
-			String iconMime, String iconName) {
-
-		validate(plateTypeId, plateLevelId, rarityId, plateName);
-
-		// icon สามารถ null ได้
-		if (iconBlob != null && iconBlob.length > 0) {
-			if (iconMime == null || iconMime.trim().isEmpty()) {
-				throw new RuntimeException("iconMime is required when iconBlob is present");
-			}
-		}
-
-		return plateRepository.insert(plateTypeId, plateLevelId, rarityId, plateName.trim(), iconBlob,
-				safeTrim(iconMime), safeTrim(iconName));
+	public boolean existsDuplicate(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId,
+			Long excludeId) {
+		return plateRepository.existsDuplicate(plateTypeId, plateLevelId, plateNameId, rarityId, excludeId);
 	}
 
 	@Override
-	public void update(Long id, Long plateTypeId, Long plateLevelId, Integer rarityId, String plateName,
-			byte[] iconBlob, String iconMime, String iconName) {
+	public Long create(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+			Integer statValue, Double statPercent) {
 
-		if (id == null || id <= 0)
-			throw new RuntimeException("id is required");
-		validate(plateTypeId, plateLevelId, rarityId, plateName);
+		validate(plateTypeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 
-		if (iconBlob != null && iconBlob.length > 0) {
-			if (iconMime == null || iconMime.trim().isEmpty()) {
-				throw new RuntimeException("iconMime is required when iconBlob is present");
-			}
+		if (plateRepository.existsDuplicate(plateTypeId, plateLevelId, plateNameId, rarityId, null)) {
+			throw new RuntimeException("Duplicate plate: same Type + Patch Level + Plate Name + Rarity already exists");
 		}
 
-		plateRepository.update(id, plateTypeId, plateLevelId, rarityId, plateName.trim(), iconBlob, safeTrim(iconMime),
-				safeTrim(iconName));
+		return plateRepository.insert(plateTypeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 	}
 
 	@Override
-	public void updateNoIcon(Long id, Long plateTypeId, Long plateLevelId, Integer rarityId, String plateName) {
-		if (id == null || id <= 0)
+	public void update(Long id, Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+			Integer statValue, Double statPercent) {
+
+		if (id == null) {
 			throw new RuntimeException("id is required");
-		validate(plateTypeId, plateLevelId, rarityId, plateName);
-		plateRepository.updateNoIcon(id, plateTypeId, plateLevelId, rarityId, plateName.trim());
+		}
+
+		validate(plateTypeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
+
+		if (plateRepository.existsDuplicate(plateTypeId, plateLevelId, plateNameId, rarityId, id)) {
+			throw new RuntimeException("Duplicate plate: same Type + Patch Level + Plate Name + Rarity already exists");
+		}
+
+		plateRepository.update(id, plateTypeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 	}
 
 	@Override
@@ -79,21 +72,37 @@ public class PlateServiceImpl implements PlateService {
 		plateRepository.delete(id);
 	}
 
-	private void validate(Long plateTypeId, Long plateLevelId, Integer rarityId, String plateName) {
+	private void validate(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+			Integer statValue, Double statPercent) {
 
-		if (plateTypeId == null || plateTypeId <= 0)
+		if (plateTypeId == null) {
 			throw new RuntimeException("plateTypeId is required");
-		if (plateLevelId == null || plateLevelId <= 0)
+		}
+
+		if (plateLevelId == null) {
 			throw new RuntimeException("plateLevelId is required");
-		if (rarityId == null || rarityId <= 0)
+		}
+
+		if (plateNameId == null) {
+			throw new RuntimeException("plateNameId is required");
+		}
+
+		if (rarityId == null) {
 			throw new RuntimeException("rarityId is required");
+		}
 
-		plateName = plateName == null ? "" : plateName.trim();
-		if (plateName.isEmpty())
-			throw new RuntimeException("plateName is required");
-	}
+		if (Long.valueOf(1L).equals(plateTypeId)) {
+			if (statId == null) {
+				throw new RuntimeException("statId is required when plateTypeId is 1");
+			}
+		}
 
-	private String safeTrim(String s) {
-		return s == null ? null : s.trim();
+		if (statValue != null && statValue < 0) {
+			throw new RuntimeException("statValue must be >= 0");
+		}
+
+		if (statPercent != null && statPercent < 0) {
+			throw new RuntimeException("statPercent must be >= 0");
+		}
 	}
 }

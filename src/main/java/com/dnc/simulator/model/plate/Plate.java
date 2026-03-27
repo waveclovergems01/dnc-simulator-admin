@@ -5,15 +5,23 @@ public class Plate {
 	private Long id;
 	private Long plateTypeId;
 	private Long plateLevelId;
+	private Long plateNameId;
 	private Integer rarityId;
+
 	private String plateName;
 	private String typeName;
 	private Integer level;
 	private String rarityName;
 	private String color;
+
 	private byte[] iconBlob;
 	private String iconMime;
 	private String iconName;
+
+	private Integer statId;
+	private String statDisplayName;
+	private Integer statValue;
+	private Double statPercent;
 
 	public Long getId() {
 		return id;
@@ -37,6 +45,14 @@ public class Plate {
 
 	public void setPlateLevelId(Long plateLevelId) {
 		this.plateLevelId = plateLevelId;
+	}
+
+	public Long getPlateNameId() {
+		return plateNameId;
+	}
+
+	public void setPlateNameId(Long plateNameId) {
+		this.plateNameId = plateNameId;
 	}
 
 	public Integer getRarityId() {
@@ -109,5 +125,37 @@ public class Plate {
 
 	public void setIconName(String iconName) {
 		this.iconName = iconName;
+	}
+
+	public Integer getStatId() {
+		return statId;
+	}
+
+	public void setStatId(Integer statId) {
+		this.statId = statId;
+	}
+
+	public String getStatDisplayName() {
+		return statDisplayName;
+	}
+
+	public void setStatDisplayName(String statDisplayName) {
+		this.statDisplayName = statDisplayName;
+	}
+
+	public Integer getStatValue() {
+		return statValue;
+	}
+
+	public void setStatValue(Integer statValue) {
+		this.statValue = statValue;
+	}
+
+	public Double getStatPercent() {
+		return statPercent;
+	}
+
+	public void setStatPercent(Double statPercent) {
+		this.statPercent = statPercent;
 	}
 }

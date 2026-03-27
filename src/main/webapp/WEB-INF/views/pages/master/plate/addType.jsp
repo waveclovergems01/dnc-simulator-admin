@@ -20,7 +20,6 @@
 
 			<form id="plateTypeForm" autocomplete="off">
 
-				<!-- hidden id (มีเฉพาะ edit) -->
 				<input type="hidden" id="typeId" value="${type.id}" />
 
 				<div class="row mb-3">
