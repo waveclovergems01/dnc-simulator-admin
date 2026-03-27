@@ -42,11 +42,18 @@
 				<tr>
 					<td>${p.id}</td>
 
-					<td class="text-center"><img
-						src="${pageContext.request.contextPath}/master/plate/plateIcon?id=${p.id}"
-						alt="icon" class="plate-icon-img"
-						style="width: 40px; height: 40px; object-fit: contain; border-radius: 6px;"
-						onerror="this.style.display='none';" /></td>
+					<td class="text-center">
+						<div
+							style="display: inline-flex; align-items: center; justify-content: center;
+		width: 48px; height: 48px; border: 5px solid ${fn:escapeXml(p.color)};
+		border-radius: 8px; padding: 3px; background: #fff;">
+							<img
+								src="${pageContext.request.contextPath}/master/plate/plateIcon?id=${p.id}"
+								alt="icon" class="plate-icon-img"
+								style="width: 40px; height: 40px; object-fit: contain; border-radius: 6px;"
+								onerror="this.style.display='none';" />
+						</div>
+					</td>
 
 					<td>${fn:escapeXml(p.plateName)}</td>
 
