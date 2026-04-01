@@ -1,7 +1,6 @@
 package com.dnc.simulator.controller.masterdata;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -17,18 +16,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dnc.simulator.model.Stat;
-import com.dnc.simulator.model.patch.PatchLevel;
 import com.dnc.simulator.model.plate.Plate;
 import com.dnc.simulator.model.plate.PlateName;
 import com.dnc.simulator.model.plate.PlateThirdStat;
+import com.dnc.simulator.service.ItemTypeService;
 import com.dnc.simulator.service.RarityService;
 import com.dnc.simulator.service.StatService;
 import com.dnc.simulator.service.patch.PatchLevelService;
 import com.dnc.simulator.service.plate.PlateNameService;
 import com.dnc.simulator.service.plate.PlateService;
 import com.dnc.simulator.service.plate.PlateThirdStatService;
-import com.dnc.simulator.service.plate.PlateTypeService;
 
 @Controller
 @RequestMapping("/master/plate")
@@ -38,7 +35,7 @@ public class PlateController {
 	private PlateService plateService;
 
 	@Autowired
-	private PlateTypeService plateTypeService;
+	private ItemTypeService itemTypeService;
 
 	@Autowired
 	private PatchLevelService patchLevelService;
@@ -57,26 +54,21 @@ public class PlateController {
 
 	@GetMapping("/viewPlate")
 	public String viewPlate(Model model) {
-
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/viewPlate.jsp");
 		model.addAttribute("activeMenuGroup", "master");
 		model.addAttribute("activeMenu", "plate");
-
-		List<Plate> list = plateService.findAll();
-		model.addAttribute("plateList", list);
-
+		model.addAttribute("plateList", plateService.findAll());
 		return "layout/main";
 	}
 
 	@GetMapping("/addPlate")
 	public String addPlate(Model model) {
-
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/addPlate.jsp");
 		model.addAttribute("activeMenuGroup", "master");
 		model.addAttribute("activeMenu", "plate");
 
 		model.addAttribute("mode", "ADD");
-		model.addAttribute("typeList", plateTypeService.findAll());
+		model.addAttribute("itemTypeList", itemTypeService.getAllItemTypes());
 		model.addAttribute("plateNameList", plateNameService.findAll());
 		model.addAttribute("levelList", patchLevelService.findAll());
 		model.addAttribute("rarityList", rarityService.getAllRarities());
@@ -99,7 +91,7 @@ public class PlateController {
 
 		model.addAttribute("mode", "EDIT");
 		model.addAttribute("plate", plate);
-		model.addAttribute("typeList", plateTypeService.findAll());
+		model.addAttribute("itemTypeList", itemTypeService.getAllItemTypes());
 		model.addAttribute("plateNameList", plateNameService.findAll());
 		model.addAttribute("levelList", patchLevelService.findAll());
 		model.addAttribute("rarityList", rarityService.getAllRarities());
@@ -111,14 +103,16 @@ public class PlateController {
 	@PostMapping("/savePlate")
 	@ResponseBody
 	public ResponseEntity<?> savePlate(@RequestParam(value = "id", required = false) Long id,
-			@RequestParam("plateTypeId") String plateTypeIdStr, @RequestParam("plateNameId") String plateNameIdStr,
-			@RequestParam("patchLevelId") String patchLevelIdStr, @RequestParam("rarityId") String rarityIdStr,
+			@RequestParam("typeId") String typeIdStr,
+			@RequestParam("plateNameId") String plateNameIdStr,
+			@RequestParam("patchLevelId") String patchLevelIdStr,
+			@RequestParam("rarityId") String rarityIdStr,
 			@RequestParam(value = "statId", required = false) String statIdStr,
 			@RequestParam(value = "statValue", required = false) String statValueStr,
 			@RequestParam(value = "statPercent", required = false) String statPercentStr) {
 
 		try {
-			plateTypeIdStr = safeTrim(plateTypeIdStr);
+			typeIdStr = safeTrim(typeIdStr);
 			plateNameIdStr = safeTrim(plateNameIdStr);
 			patchLevelIdStr = safeTrim(patchLevelIdStr);
 			rarityIdStr = safeTrim(rarityIdStr);
@@ -126,8 +120,8 @@ public class PlateController {
 			statValueStr = safeTrim(statValueStr);
 			statPercentStr = safeTrim(statPercentStr);
 
-			if (!isNumber(plateTypeIdStr)) {
-				return ResponseEntity.badRequest().body("Plate Type is required");
+			if (!isNumber(typeIdStr)) {
+				return ResponseEntity.badRequest().body("Item Type is required");
 			}
 			if (!isNumber(plateNameIdStr)) {
 				return ResponseEntity.badRequest().body("Plate Name is required");
@@ -139,8 +133,8 @@ public class PlateController {
 				return ResponseEntity.badRequest().body("Rarity is required");
 			}
 
-			if ("1".equals(plateTypeIdStr) && !isNumber(statIdStr)) {
-				return ResponseEntity.badRequest().body("Stat is required when Plate Type is 1");
+			if ("1".equals(typeIdStr) && !isNumber(statIdStr)) {
+				return ResponseEntity.badRequest().body("Stat is required when Item Type is 1");
 			}
 
 			if (!statValueStr.isEmpty() && !statValueStr.matches("^\\d+$")) {
@@ -151,7 +145,7 @@ public class PlateController {
 				return ResponseEntity.badRequest().body("Value (%) must be numeric only");
 			}
 
-			Long plateTypeId = Long.valueOf(plateTypeIdStr);
+			Integer typeId = Integer.valueOf(typeIdStr);
 			Long plateNameId = Long.valueOf(plateNameIdStr);
 			Long patchLevelId = Long.valueOf(patchLevelIdStr);
 			Integer rarityId = Integer.valueOf(rarityIdStr);
@@ -160,16 +154,15 @@ public class PlateController {
 			Integer statValue = statValueStr.isEmpty() ? null : Integer.valueOf(statValueStr);
 			Double statPercent = statPercentStr.isEmpty() ? null : Double.valueOf(statPercentStr);
 
-			if (plateService.existsDuplicate(plateTypeId, patchLevelId, plateNameId, rarityId, id)) {
+			if (plateService.existsDuplicate(typeId, patchLevelId, plateNameId, rarityId, id)) {
 				return ResponseEntity.badRequest()
-						.body("Duplicate plate: same Type + Patch Level + Plate Name + Rarity already exists");
+						.body("Duplicate plate: same Item Type + Patch Level + Plate Name + Rarity already exists");
 			}
 
 			if (id == null) {
-				plateService.create(plateTypeId, patchLevelId, plateNameId, rarityId, statId, statValue, statPercent);
+				plateService.create(typeId, patchLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 			} else {
-				plateService.update(id, plateTypeId, patchLevelId, plateNameId, rarityId, statId, statValue,
-						statPercent);
+				plateService.update(id, typeId, patchLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 			}
 
 			return ResponseEntity.ok("SUCCESS");
@@ -183,7 +176,6 @@ public class PlateController {
 	@PostMapping("/deletePlate")
 	@ResponseBody
 	public ResponseEntity<?> deletePlate(@RequestParam("id") Long id) {
-
 		try {
 			plateService.delete(id);
 			return ResponseEntity.ok("SUCCESS");
@@ -195,7 +187,6 @@ public class PlateController {
 
 	@GetMapping("/plateIcon")
 	public ResponseEntity<byte[]> plateIcon(@RequestParam("id") Long id) {
-
 		try {
 			Plate plate = plateService.findIconById(id);
 
@@ -217,78 +208,6 @@ public class PlateController {
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
-	}
-
-	@GetMapping("/viewType")
-	public String viewType(Model model) {
-		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/viewType.jsp");
-		model.addAttribute("activeMenuGroup", "master");
-		model.addAttribute("activeMenu", "plate");
-
-		model.addAttribute("typeList", plateTypeService.findAll());
-
-		return "layout/main";
-	}
-
-	@GetMapping("/addType")
-	public String addType(Model model) {
-		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/addType.jsp");
-		model.addAttribute("activeMenuGroup", "master");
-		model.addAttribute("activeMenu", "plate");
-
-		model.addAttribute("mode", "ADD");
-
-		return "layout/main";
-	}
-
-	@GetMapping("/editType")
-	public String editType(@RequestParam("id") Long id, Model model) {
-
-		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/addType.jsp");
-		model.addAttribute("activeMenuGroup", "master");
-		model.addAttribute("activeMenu", "plate");
-
-		model.addAttribute("mode", "EDIT");
-		model.addAttribute("type", plateTypeService.findById(id));
-
-		return "layout/main";
-	}
-
-	@PostMapping("/saveType")
-	@ResponseBody
-	public ResponseEntity<?> saveType(@RequestParam(value = "id", required = false) Long id,
-			@RequestParam("typeName") String typeName) {
-		try {
-
-			typeName = typeName == null ? "" : typeName.trim();
-
-			if (typeName.isEmpty()) {
-				return ResponseEntity.badRequest().body("Type name is required");
-			}
-
-			if (!typeName.matches("^[A-Za-z ]+$")) {
-				return ResponseEntity.badRequest().body("Type name must contain English letters only");
-			}
-
-			if (id == null) {
-				plateTypeService.create(typeName);
-			} else {
-				plateTypeService.update(id, typeName);
-			}
-
-			return ResponseEntity.ok("SUCCESS");
-
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
-		}
-	}
-
-	@PostMapping("/deleteType")
-	public String deleteType(@RequestParam("id") Long id) {
-
-		plateTypeService.delete(id);
-
-		return "redirect:/master/plate/viewType";
 	}
 
 	@GetMapping("/view3rdStat")
@@ -546,19 +465,6 @@ public class PlateController {
 
 	private boolean isNumber(String s) {
 		return s != null && s.matches("^\\d+$");
-	}
-
-	private ResponseEntity<String> ok() {
-		return ResponseEntity.ok("SUCCESS");
-	}
-
-	private ResponseEntity<String> bad(String msg) {
-		return ResponseEntity.badRequest().body(msg);
-	}
-
-	private ResponseEntity<String> error(Exception e) {
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(e.getMessage() == null ? "ERROR" : e.getMessage());
 	}
 
 	private String getFileExtension(String originalFilename, String contentType) {

@@ -10,12 +10,10 @@
 
 	<div class="ms-auto d-flex gap-2">
 		<a href="${pageContext.request.contextPath}/master/plate/addPlate"
-			class="btn btn-primary"> + Add Plate </a> <a
-			href="${pageContext.request.contextPath}/master/plate/viewType"
-			class="btn btn-primary"> >> Plate Type </a> <a
-			href="${pageContext.request.contextPath}/master/plate/viewPlateName"
-			class="btn btn-primary"> >> Plate Name </a> <a
-			href="${pageContext.request.contextPath}/master/plate/view3rdStat"
+			class="btn btn-primary"> + Add Plate </a>
+		<a href="${pageContext.request.contextPath}/master/plate/viewPlateName"
+			class="btn btn-primary"> >> Plate Name </a>
+		<a href="${pageContext.request.contextPath}/master/plate/view3rdStat"
 			class="btn btn-primary"> >> Plate 3rd Stat </a>
 	</div>
 </div>
@@ -45,8 +43,8 @@
 					<td class="text-center">
 						<div
 							style="display: inline-flex; align-items: center; justify-content: center;
-		width: 48px; height: 48px; border: 5px solid ${fn:escapeXml(p.color)};
-		border-radius: 8px; padding: 3px; background: #fff;">
+							width: 48px; height: 48px; border: 5px solid ${fn:escapeXml(p.color)};
+							border-radius: 8px; padding: 3px; background: #fff;">
 							<img
 								src="${pageContext.request.contextPath}/master/plate/plateIcon?id=${p.id}"
 								alt="icon" class="plate-icon-img"
@@ -57,25 +55,34 @@
 
 					<td>${fn:escapeXml(p.plateName)}</td>
 
-					<td>${fn:escapeXml(p.typeName)}</td>
+					<td>${fn:escapeXml(p.itemTypeName)}</td>
 
 					<td>${p.level}</td>
 
-					<td><span class="badge"
-						style="background:${fn:escapeXml(p.color)};">
-							${fn:escapeXml(p.rarityName)} </span></td>
+					<td>
+						<span class="badge" style="background:${fn:escapeXml(p.color)};">
+							${fn:escapeXml(p.rarityName)}
+						</span>
+					</td>
 
-					<td><c:if test="${not empty p.statDisplayName}">
+					<td>
+						<c:if test="${not empty p.statDisplayName}">
 							<div>${fn:escapeXml(p.statDisplayName)}</div>
-						</c:if> <c:if test="${p.statValue != null}">
-							<div>${p.statValue}</div>
-						</c:if> <c:if test="${p.statPercent != null}">
-							<div>${p.statPercent}%</div>
-						</c:if></td>
+						</c:if>
 
-					<td class="text-center"><a
-						href="${pageContext.request.contextPath}/master/plate/editPlate?id=${p.id}"
-						class="btn btn-sm btn-warning me-1"> Edit </a>
+						<c:if test="${p.statValue != null}">
+							<div>${p.statValue}</div>
+						</c:if>
+
+						<c:if test="${p.statPercent != null}">
+							<div>${p.statPercent}%</div>
+						</c:if>
+					</td>
+
+					<td class="text-center">
+						<a
+							href="${pageContext.request.contextPath}/master/plate/editPlate?id=${p.id}"
+							class="btn btn-sm btn-warning me-1"> Edit </a>
 
 						<form
 							action="${pageContext.request.contextPath}/master/plate/deletePlate"
@@ -83,7 +90,8 @@
 							<input type="hidden" name="id" value="${p.id}" />
 							<button type="button"
 								class="btn btn-sm btn-danger btn-delete-plate" data-id="${p.id}">Delete</button>
-						</form></td>
+						</form>
+					</td>
 
 				</tr>
 			</c:forEach>

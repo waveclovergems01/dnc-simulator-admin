@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.dnc.simulator.model.JsonExportConfig;
+import com.dnc.simulator.model.export.ImageExportItem;
 
 @Repository
 public class JsonExportConfigRepositoryImpl implements JsonExportConfigRepository {
@@ -15,9 +16,6 @@ public class JsonExportConfigRepositoryImpl implements JsonExportConfigRepositor
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
-	/*
-	 * ========================= LIST =========================
-	 */
 	@Override
 	public List<JsonExportConfig> getAllConfigs() {
 
@@ -33,9 +31,6 @@ public class JsonExportConfigRepositoryImpl implements JsonExportConfigRepositor
 		});
 	}
 
-	/*
-	 * ========================= GET BY ID =========================
-	 */
 	@Override
 	public JsonExportConfig getConfigById(Integer id) {
 
@@ -53,18 +48,60 @@ public class JsonExportConfigRepositoryImpl implements JsonExportConfigRepositor
 		return list.isEmpty() ? null : list.get(0);
 	}
 
-	/*
-	 * ========================= EXECUTE EXPORT SQL =========================
-	 */
 	@Override
 	public String executeExportSql(String sql) {
 
 		try {
-			// SQL ต้อง return 1 row / 1 column (TEXT / JSON)
 			return jdbcTemplate.queryForObject(sql, String.class);
 		} catch (EmptyResultDataAccessException e) {
-			// no row returned → return empty json
 			return "[]";
 		}
 	}
+
+	@Override
+	public String getConfigValue(String code, String name) {
+
+		String sql = "SELECT value FROM m_config WHERE code = ? AND name = ?";
+
+		try {
+			return jdbcTemplate.queryForObject(sql, String.class, code, name);
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public List<ImageExportItem> getPlateImages() {
+
+		String sql = "SELECT id, icon_name, icon_mime, icon_blob " + "FROM m_plate_name "
+				+ "WHERE icon_blob IS NOT NULL " + "AND LENGTH(icon_blob) > 0";
+
+		return jdbcTemplate.query(sql, (rs, i) -> {
+			ImageExportItem item = new ImageExportItem();
+			item.setId(rs.getLong("id"));
+			item.setComponent("PLATE");
+			item.setFileName(rs.getString("icon_name"));
+			item.setMimeType(rs.getString("icon_mime"));
+			item.setFileBlob(rs.getBytes("icon_blob"));
+			return item;
+		});
+	}
+
+	@Override
+	public List<ImageExportItem> getCardImages() {
+
+		String sql = "SELECT id, icon_name, icon_mime, icon_blob " + "FROM m_card_name "
+				+ "WHERE icon_blob IS NOT NULL " + "AND LENGTH(icon_blob) > 0";
+
+		return jdbcTemplate.query(sql, (rs, i) -> {
+			ImageExportItem item = new ImageExportItem();
+			item.setId(rs.getLong("id"));
+			item.setComponent("CARD");
+			item.setFileName(rs.getString("icon_name"));
+			item.setMimeType(rs.getString("icon_mime"));
+			item.setFileBlob(rs.getBytes("icon_blob"));
+			return item;
+		});
+	}
+	
 }

@@ -32,39 +32,39 @@ public class PlateServiceImpl implements PlateService {
 	}
 
 	@Override
-	public boolean existsDuplicate(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId,
+	public boolean existsDuplicate(Integer typeId, Long plateLevelId, Long plateNameId, Integer rarityId,
 			Long excludeId) {
-		return plateRepository.existsDuplicate(plateTypeId, plateLevelId, plateNameId, rarityId, excludeId);
+		return plateRepository.existsDuplicate(typeId, plateLevelId, plateNameId, rarityId, excludeId);
 	}
 
 	@Override
-	public Long create(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+	public Long create(Integer typeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
 			Integer statValue, Double statPercent) {
 
-		validate(plateTypeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
+		validate(typeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 
-		if (plateRepository.existsDuplicate(plateTypeId, plateLevelId, plateNameId, rarityId, null)) {
-			throw new RuntimeException("Duplicate plate: same Type + Patch Level + Plate Name + Rarity already exists");
+		if (plateRepository.existsDuplicate(typeId, plateLevelId, plateNameId, rarityId, null)) {
+			throw new RuntimeException("Duplicate plate: same Item Type + Patch Level + Plate Name + Rarity already exists");
 		}
 
-		return plateRepository.insert(plateTypeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
+		return plateRepository.insert(typeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 	}
 
 	@Override
-	public void update(Long id, Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+	public void update(Long id, Integer typeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
 			Integer statValue, Double statPercent) {
 
 		if (id == null) {
 			throw new RuntimeException("id is required");
 		}
 
-		validate(plateTypeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
+		validate(typeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 
-		if (plateRepository.existsDuplicate(plateTypeId, plateLevelId, plateNameId, rarityId, id)) {
-			throw new RuntimeException("Duplicate plate: same Type + Patch Level + Plate Name + Rarity already exists");
+		if (plateRepository.existsDuplicate(typeId, plateLevelId, plateNameId, rarityId, id)) {
+			throw new RuntimeException("Duplicate plate: same Item Type + Patch Level + Plate Name + Rarity already exists");
 		}
 
-		plateRepository.update(id, plateTypeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
+		plateRepository.update(id, typeId, plateLevelId, plateNameId, rarityId, statId, statValue, statPercent);
 	}
 
 	@Override
@@ -72,11 +72,11 @@ public class PlateServiceImpl implements PlateService {
 		plateRepository.delete(id);
 	}
 
-	private void validate(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+	private void validate(Integer typeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
 			Integer statValue, Double statPercent) {
 
-		if (plateTypeId == null) {
-			throw new RuntimeException("plateTypeId is required");
+		if (typeId == null) {
+			throw new RuntimeException("typeId is required");
 		}
 
 		if (plateLevelId == null) {
@@ -91,9 +91,10 @@ public class PlateServiceImpl implements PlateService {
 			throw new RuntimeException("rarityId is required");
 		}
 
-		if (Long.valueOf(1L).equals(plateTypeId)) {
+		// ถ้ายังใช้ rule เดิม
+		if (Integer.valueOf(1).equals(typeId)) {
 			if (statId == null) {
-				throw new RuntimeException("statId is required when plateTypeId is 1");
+				throw new RuntimeException("statId is required when typeId is 1");
 			}
 		}
 

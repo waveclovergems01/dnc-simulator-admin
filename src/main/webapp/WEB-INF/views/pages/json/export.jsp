@@ -16,6 +16,20 @@
 		</label>
 	</div>
 
+	<hr />
+
+	<div style="margin-bottom: 10px;">
+		<strong>Export Image Components</strong>
+	</div>
+
+	<div style="margin-bottom: 15px;">
+		<label style="margin-right: 20px;"> <input type="checkbox"
+			name="imageComponents" value="PLATE" /> Plate Images
+		</label> <label style="margin-right: 20px;"> <input type="checkbox"
+			name="imageComponents" value="CARD" /> Card Images
+		</label>
+	</div>
+
 	<table border="1" cellpadding="6" cellspacing="0" width="100%">
 		<thead>
 			<tr>
@@ -38,16 +52,20 @@
 </form>
 
 <script>
-    const checkAll = document.getElementById("checkAll");
-    const checkboxes = document.querySelectorAll(".export-checkbox");
+	const checkAll = document.getElementById("checkAll");
+	const checkboxes = document.querySelectorAll(".export-checkbox");
 
-    checkAll.addEventListener("change", () => {
-        checkboxes.forEach(cb => cb.checked = checkAll.checked);
-    });
+	checkAll.addEventListener("change", function() {
+		checkboxes.forEach(function(cb) {
+			cb.checked = checkAll.checked;
+		});
+	});
 
-    checkboxes.forEach(cb => {
-        cb.addEventListener("change", () => {
-            checkAll.checked = [...checkboxes].every(c => c.checked);
-        });
-    });
+	checkboxes.forEach(function(cb) {
+		cb.addEventListener("change", function() {
+			checkAll.checked = Array.from(checkboxes).every(function(c) {
+				return c.checked;
+			});
+		});
+	});
 </script>

@@ -3,13 +3,13 @@ package com.dnc.simulator.model.plate;
 public class Plate {
 
 	private Long id;
-	private Long plateTypeId;
+	private Integer typeId;
 	private Long plateLevelId;
 	private Long plateNameId;
 	private Integer rarityId;
 
 	private String plateName;
-	private String typeName;
+	private String itemTypeName;
 	private Integer level;
 	private String rarityName;
 	private String color;
@@ -31,12 +31,12 @@ public class Plate {
 		this.id = id;
 	}
 
-	public Long getPlateTypeId() {
-		return plateTypeId;
+	public Integer getTypeId() {
+		return typeId;
 	}
 
-	public void setPlateTypeId(Long plateTypeId) {
-		this.plateTypeId = plateTypeId;
+	public void setTypeId(Integer typeId) {
+		this.typeId = typeId;
 	}
 
 	public Long getPlateLevelId() {
@@ -71,12 +71,12 @@ public class Plate {
 		this.plateName = plateName;
 	}
 
-	public String getTypeName() {
-		return typeName;
+	public String getItemTypeName() {
+		return itemTypeName;
 	}
 
-	public void setTypeName(String typeName) {
-		this.typeName = typeName;
+	public void setItemTypeName(String itemTypeName) {
+		this.itemTypeName = itemTypeName;
 	}
 
 	public Integer getLevel() {

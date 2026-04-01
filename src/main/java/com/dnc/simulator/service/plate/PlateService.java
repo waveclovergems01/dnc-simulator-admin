@@ -12,12 +12,12 @@ public interface PlateService {
 
 	Plate findIconById(Long id);
 
-	boolean existsDuplicate(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Long excludeId);
+	boolean existsDuplicate(Integer typeId, Long plateLevelId, Long plateNameId, Integer rarityId, Long excludeId);
 
-	Long create(Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+	Long create(Integer typeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
 			Integer statValue, Double statPercent);
 
-	void update(Long id, Long plateTypeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
+	void update(Long id, Integer typeId, Long plateLevelId, Long plateNameId, Integer rarityId, Integer statId,
 			Integer statValue, Double statPercent);
 
 	void delete(Long id);
