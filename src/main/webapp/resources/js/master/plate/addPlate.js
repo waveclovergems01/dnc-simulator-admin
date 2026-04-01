@@ -5,8 +5,7 @@
 		function toggleStatDropdown() {
 			var typeId = ($("#typeId").val() || "").trim();
 
-			// ถ้ายังใช้ rule เดิมว่า typeId = 1 ต้องมี stat
-			if (typeId === "1") {
+			if (typeId === "30001") {
 				$("#statDropdownWrapper").show();
 			} else {
 				$("#statDropdownWrapper").hide();

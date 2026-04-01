@@ -1,6 +1,9 @@
 package com.dnc.simulator.controller.masterdata;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dnc.simulator.model.ItemType;
 import com.dnc.simulator.model.plate.Plate;
 import com.dnc.simulator.model.plate.PlateName;
 import com.dnc.simulator.model.plate.PlateThirdStat;
@@ -66,9 +70,16 @@ public class PlateController {
 		model.addAttribute("contentPage", "/WEB-INF/views/pages/master/plate/addPlate.jsp");
 		model.addAttribute("activeMenuGroup", "master");
 		model.addAttribute("activeMenu", "plate");
+		
+		List<ItemType> allItemTypes = itemTypeService.getAllItemTypes();
+		List<ItemType> heraldryList = allItemTypes.stream()
+			    .filter(item -> item.getCategoryId() == 30000)
+			    .collect(Collectors.toList());
+		
+		
 
 		model.addAttribute("mode", "ADD");
-		model.addAttribute("itemTypeList", itemTypeService.getAllItemTypes());
+		model.addAttribute("itemTypeList", heraldryList);
 		model.addAttribute("plateNameList", plateNameService.findAll());
 		model.addAttribute("levelList", patchLevelService.findAll());
 		model.addAttribute("rarityList", rarityService.getAllRarities());

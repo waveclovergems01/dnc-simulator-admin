@@ -209,7 +209,7 @@ public class PlateRepositoryImpl implements PlateRepository {
 				+ "LEFT JOIN m_rarities r ON p.rarity_id = r.rarity_id "
 				+ "LEFT JOIN m_plate_name pn ON p.plate_name_id = pn.id "
 				+ "LEFT JOIN m_stats s ON p.stat_id = s.stat_id "
-				+ "ORDER BY p.id ASC";
+				+ "ORDER BY pl.level, p.rarity_id, pn.name  ASC";
 
 		return jdbcTemplate.query(sql, plateRowMapper());
 	}
