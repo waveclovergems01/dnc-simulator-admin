@@ -24,12 +24,12 @@ import com.dnc.simulator.model.Job;
 import com.dnc.simulator.model.SuffixItem;
 import com.dnc.simulator.model.SuffixItemAbility;
 import com.dnc.simulator.model.SuffixItemExtraStat;
-import com.dnc.simulator.service.EquipmentItemService;
 import com.dnc.simulator.service.JobService;
 import com.dnc.simulator.service.StatService;
 import com.dnc.simulator.service.SuffixItemService;
 import com.dnc.simulator.service.SuffixItemStatService;
 import com.dnc.simulator.service.SuffixService;
+import com.dnc.simulator.service.equipment.EquipmentItemService;
 
 @Controller
 @RequestMapping("/master/suffix-items")

@@ -1,9 +1,9 @@
-package com.dnc.simulator.service;
+package com.dnc.simulator.service.equipment;
 
 import java.util.List;
 import java.util.Map;
 
-import com.dnc.simulator.model.EquipmentItem;
+import com.dnc.simulator.model.equipment.EquipmentItem;
 
 public interface EquipmentCloneService {
 

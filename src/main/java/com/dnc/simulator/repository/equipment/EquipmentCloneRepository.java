@@ -1,11 +1,13 @@
-package com.dnc.simulator.repository;
+package com.dnc.simulator.repository.equipment;
 
 import java.util.List;
 
-import com.dnc.simulator.model.EquipmentItem;
 import com.dnc.simulator.model.EquipmentItemStat;
+import com.dnc.simulator.model.equipment.EquipmentItem;
 
 public interface EquipmentCloneRepository {
+
+	void ensureTable();
 
 	List<EquipmentItem> findItemsBySetId(Long setId);
 

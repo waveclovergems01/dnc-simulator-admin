@@ -1,13 +1,19 @@
-package com.dnc.simulator.repository;
+package com.dnc.simulator.repository.equipment;
 
 import java.util.List;
-import com.dnc.simulator.model.*;
+
+import com.dnc.simulator.model.EquipmentItemStat;
+import com.dnc.simulator.model.equipment.EquipmentItem;
 
 public interface EquipmentItemRepository {
+
+	void ensureTable();
 
 	List<EquipmentItem> findAll();
 
 	EquipmentItem findById(Long itemId);
+
+	EquipmentItem findIconById(Long itemId);
 
 	void insert(EquipmentItem item);
 
@@ -15,7 +21,6 @@ public interface EquipmentItemRepository {
 
 	void delete(Long itemId);
 
-	// stats
 	List<EquipmentItemStat> findStatsByItemId(Long itemId);
 
 	void insertStat(EquipmentItemStat stat);

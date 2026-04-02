@@ -1,16 +1,14 @@
-package com.dnc.simulator.service;
+package com.dnc.simulator.service.equipment;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dnc.simulator.model.EquipmentItem;
 import com.dnc.simulator.model.EquipmentItemStat;
-import com.dnc.simulator.repository.EquipmentCloneRepository;
-import com.dnc.simulator.service.EquipmentCloneService;
+import com.dnc.simulator.model.equipment.EquipmentItem;
+import com.dnc.simulator.repository.equipment.EquipmentCloneRepository;
 
 @Service
 public class EquipmentCloneServiceImpl implements EquipmentCloneService {
@@ -21,10 +19,6 @@ public class EquipmentCloneServiceImpl implements EquipmentCloneService {
 		this.cloneRepo = cloneRepo;
 	}
 
-	/*
-	 * ========================================================= LOAD SET (พร้อม
-	 * stats) =========================================================
-	 */
 	@Override
 	public List<EquipmentItem> getItemsBySetId(Long setId) {
 
@@ -38,11 +32,6 @@ public class EquipmentCloneServiceImpl implements EquipmentCloneService {
 		return items;
 	}
 
-	/*
-	 * ========================================================= CLONE SET
-	 * (ใช้ค่าที่แก้แล้วจริง)
-	 * =========================================================
-	 */
 	@Override
 	@Transactional
 	public int cloneSetWithEditedValues(Long setId, Map<Long, EquipmentItem> clones) {
@@ -54,18 +43,16 @@ public class EquipmentCloneServiceImpl implements EquipmentCloneService {
 			EquipmentItem clone = entry.getValue();
 			Long newItemId = clone.getItemId();
 
-			// validate
 			if (newItemId == null) {
 				continue;
 			}
+
 			if (cloneRepo.existsItemId(newItemId)) {
 				throw new IllegalArgumentException("Item ID already exists: " + newItemId);
 			}
 
-			// insert item
 			cloneRepo.insertEquipmentItem(clone);
 
-			// insert stats
 			if (clone.getStats() != null) {
 				for (EquipmentItemStat s : clone.getStats()) {
 					s.setItemId(newItemId);

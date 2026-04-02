@@ -11,16 +11,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.dnc.simulator.model.EquipmentItem;
 import com.dnc.simulator.model.SuffixItem;
 import com.dnc.simulator.model.SuffixItemAbility;
 import com.dnc.simulator.model.SuffixItemAbilityStat;
 import com.dnc.simulator.model.SuffixItemExtraStat;
 import com.dnc.simulator.model.SuffixType;
-import com.dnc.simulator.service.EquipmentItemService;
+import com.dnc.simulator.model.equipment.EquipmentItem;
 import com.dnc.simulator.service.SuffixCloneService;
 import com.dnc.simulator.service.SuffixItemService;
 import com.dnc.simulator.service.SuffixService;
+import com.dnc.simulator.service.equipment.EquipmentItemService;
 
 @Controller
 @RequestMapping("/master/suffix-items")

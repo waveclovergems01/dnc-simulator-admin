@@ -1,12 +1,13 @@
-package com.dnc.simulator.service;
+package com.dnc.simulator.service.equipment;
+
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.dnc.simulator.model.EquipmentItem;
 import com.dnc.simulator.model.EquipmentItemStat;
-import com.dnc.simulator.repository.EquipmentItemRepository;
-import com.dnc.simulator.service.EquipmentItemService;
+import com.dnc.simulator.model.equipment.EquipmentItem;
+import com.dnc.simulator.repository.equipment.EquipmentItemRepository;
 
 @Service
 public class EquipmentItemServiceImpl implements EquipmentItemService {
@@ -18,13 +19,18 @@ public class EquipmentItemServiceImpl implements EquipmentItemService {
 	}
 
 	@Override
-	public java.util.List<EquipmentItem> getAll() {
+	public List<EquipmentItem> getAll() {
 		return repo.findAll();
 	}
 
 	@Override
 	public EquipmentItem getById(Long itemId) {
 		return repo.findById(itemId);
+	}
+
+	@Override
+	public EquipmentItem getIconById(Long itemId) {
+		return repo.findIconById(itemId);
 	}
 
 	@Override
@@ -40,6 +46,12 @@ public class EquipmentItemServiceImpl implements EquipmentItemService {
 
 		if (item.getStats() != null) {
 			for (EquipmentItemStat s : item.getStats()) {
+				s.setItemId(item.getItemId());
+
+				if (s.getIsPercentage() == null) {
+					s.setIsPercentage(0);
+				}
+
 				repo.insertStat(s);
 			}
 		}

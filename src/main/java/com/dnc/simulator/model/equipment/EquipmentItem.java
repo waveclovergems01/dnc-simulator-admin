@@ -1,14 +1,12 @@
-package com.dnc.simulator.model;
+package com.dnc.simulator.model.equipment;
 
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-public class EquipmentItem implements Serializable{
+import com.dnc.simulator.model.EquipmentItemStat;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 993345518947621898L;
+public class EquipmentItem {
+
 	private Long itemId;
 	private String name;
 	private Integer typeId;
@@ -18,8 +16,11 @@ public class EquipmentItem implements Serializable{
 	private Integer durability;
 	private Integer setId;
 
-	// ใช้ตอน join / edit
-	private List<EquipmentItemStat> stats;
+	private byte[] iconBlob;
+	private String iconMime;
+	private String iconName;
+
+	private List<EquipmentItemStat> stats = new ArrayList<EquipmentItemStat>();
 
 	public Long getItemId() {
 		return itemId;
@@ -83,6 +84,30 @@ public class EquipmentItem implements Serializable{
 
 	public void setSetId(Integer setId) {
 		this.setId = setId;
+	}
+
+	public byte[] getIconBlob() {
+		return iconBlob;
+	}
+
+	public void setIconBlob(byte[] iconBlob) {
+		this.iconBlob = iconBlob;
+	}
+
+	public String getIconMime() {
+		return iconMime;
+	}
+
+	public void setIconMime(String iconMime) {
+		this.iconMime = iconMime;
+	}
+
+	public String getIconName() {
+		return iconName;
+	}
+
+	public void setIconName(String iconName) {
+		this.iconName = iconName;
 	}
 
 	public List<EquipmentItemStat> getStats() {
