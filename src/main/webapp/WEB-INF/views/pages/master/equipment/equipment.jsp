@@ -4,6 +4,42 @@
 <link rel="stylesheet"
 	href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
 
+<style>
+	.rarity-icon-frame {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 56px;
+		height: 56px;
+		padding: 3px;
+		border: 2px solid #6c757d;
+		border-radius: 10px;
+		background: #ffffff;
+		box-sizing: border-box;
+	}
+
+	.rarity-icon-frame img {
+		width: 48px;
+		height: 48px;
+		object-fit: contain;
+		display: block;
+	}
+
+	.rarity-icon-empty {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 56px;
+		height: 56px;
+		border: 2px dashed #ced4da;
+		border-radius: 10px;
+		color: #6c757d;
+		font-size: 12px;
+		background: #f8f9fa;
+		box-sizing: border-box;
+	}
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
 	<h2 class="mb-0">Master Equipment Items</h2>
 
@@ -80,13 +116,22 @@
 				<td class="text-center align-middle">
 					<c:choose>
 						<c:when test="${not empty e.iconName}">
-							<img
-								src="${pageContext.request.contextPath}/master/equipment/icon?itemId=${e.itemId}"
-								alt="${e.name}"
-								style="width:48px; height:48px; object-fit:contain;" />
+							<c:set var="rarityColor" value="#6c757d" />
+							<c:forEach items="${rarities}" var="r">
+								<c:if test="${r.rarityId == e.rarityId}">
+									<c:set var="rarityColor" value="${r.color}" />
+								</c:if>
+							</c:forEach>
+
+							<span class="rarity-icon-frame"
+								style="border-color:${rarityColor}; box-shadow:0 0 8px ${rarityColor};">
+								<img
+									src="${pageContext.request.contextPath}/master/equipment/icon?itemId=${e.itemId}"
+									alt="${e.name}" />
+							</span>
 						</c:when>
 						<c:otherwise>
-							<span class="text-muted">-</span>
+							<span class="rarity-icon-empty">-</span>
 						</c:otherwise>
 					</c:choose>
 				</td>

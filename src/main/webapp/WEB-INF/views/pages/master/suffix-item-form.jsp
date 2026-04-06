@@ -1,7 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
-<!-- ================= HEADER + BACK ================= -->
 <div class="d-flex justify-content-between align-items-center mb-3">
 	<h2 class="mb-0">Manage Suffixes</h2>
 	<button type="button" class="btn btn-secondary" onclick="goBack()">←
@@ -10,27 +9,82 @@
 
 <div class="card p-4 shadow-sm">
 
-	<!-- ================= ITEM SELECT ================= -->
-	<div class="row mb-4">
-		<div class="col-md-6">
-			<label class="form-label">Item</label> <select id="itemId"
-				class="form-select">
-				<option value="">-- Select Item --</option>
-				<c:forEach items="${equipmentItems}" var="e">
-					<option value="${e.itemId}" data-name="<c:out value='${e.name}'/>"
-						<c:if test="${e.itemId == selectedItemId}">selected</c:if>>
-						<c:out value="${e.name}" /> (ID: ${e.itemId})
+	<div class="row mb-3">
+		<div class="col-md-4">
+			<label class="form-label">Filter by Job</label>
+			<select id="jobFilter" class="form-select">
+				<option value="">-- All Jobs --</option>
+				<c:forEach items="${jobFilterMap}" var="entry">
+					<option value="${entry.key}"
+						<c:if test="${selectedJobFilter != null and selectedJobFilter == entry.key}">selected</c:if>>
+						${entry.value}
+					</option>
+				</c:forEach>
+			</select>
+		</div>
+
+		<div class="col-md-4">
+			<label class="form-label">Filter by Level</label>
+			<select id="levelFilter" class="form-select">
+				<option value="">-- All Levels --</option>
+				<c:forEach items="${levelFilterList}" var="lv">
+					<option value="${lv}"
+						<c:if test="${selectedLevelFilter != null and selectedLevelFilter == lv}">selected</c:if>>
+						${lv}
+					</option>
+				</c:forEach>
+			</select>
+		</div>
+
+		<div class="col-md-4">
+			<label class="form-label">Filter by Rarity</label>
+			<select id="rarityFilter" class="form-select">
+				<option value="">-- All Rarities --</option>
+				<c:forEach items="${rarityFilterMap}" var="entry">
+					<option value="${entry.key}"
+						<c:if test="${selectedRarityFilter != null and selectedRarityFilter == entry.key}">selected</c:if>>
+						${entry.value}
 					</option>
 				</c:forEach>
 			</select>
 		</div>
 	</div>
 
-	<!-- ================= TIERS ================= -->
+	<div class="row mb-4">
+		<div class="col-md-12 d-flex justify-content-end">
+			<button type="button" class="btn btn-outline-secondary" id="resetItemFilterBtn">
+				Reset Filters
+			</button>
+		</div>
+	</div>
+
+	<div class="row mb-2">
+		<div class="col-md-8">
+			<label class="form-label">Item</label>
+			<select id="itemId" class="form-select">
+				<option value="">-- Select Item --</option>
+				<c:forEach items="${equipmentItems}" var="e">
+					<option
+						value="${e.itemId}"
+						data-name="<c:out value='${e.name}'/>"
+						data-job-id="${e.jobId}"
+						data-level="${e.requiredLevel}"
+						data-rarity-id="${e.rarityId}"
+						<c:if test="${e.itemId == selectedItemId}">selected</c:if>>
+						<c:out value="${e.name}" /> (ID: ${e.itemId})
+					</option>
+				</c:forEach>
+			</select>
+			<div class="form-text" id="itemFilterSummary"></div>
+		</div>
+	</div>
+
 	<c:forEach var="tier" items="${tiers}">
 
 		<h5 class="mt-4 mb-2 d-flex align-items-center gap-2">
-			Suffix Tier ${tier} <span class="badge bg-secondary"> <c:choose>
+			Suffix Tier ${tier}
+			<span class="badge bg-secondary">
+				<c:choose>
 					<c:when test="${tier == 1}">Suffix I</c:when>
 					<c:when test="${tier == 2}">Suffix II</c:when>
 					<c:when test="${tier == 3}">Suffix III</c:when>
@@ -43,7 +97,6 @@
 					class="btn btn-sm btn-outline-primary cloneTier1Btn"
 					data-target-tier="${tier}">Clone Suffix I</button>
 
-				<!-- 🔥 NEW : CLONE WITH STATS -->
 				<button type="button"
 					class="btn btn-sm btn-outline-danger cloneTier1WithStatsBtn"
 					data-target-tier="${tier}">Clone Suffix I with Stats</button>
@@ -66,7 +119,8 @@
 
 						<td>${s.id}</td>
 
-						<td><select class="form-select suffix-type-select">
+						<td>
+							<select class="form-select suffix-type-select">
 								<option value="">-- Select Suffix Type --</option>
 								<c:forEach items="${suffixTypes}" var="t">
 									<option value="${t.suffixId}"
@@ -74,7 +128,8 @@
 										<c:out value="${t.suffixName}" />
 									</option>
 								</c:forEach>
-						</select></td>
+							</select>
+						</td>
 
 						<td class="suffix-name"><c:out value="${s.name}" /></td>
 
@@ -98,7 +153,6 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
-/* ================= TIER → ROMAN ================= */
 function tierToRoman(tier) {
 	const map = { 2: 'II', 3: 'III', 4: 'IV', 5: 'V' };
 	return map[tier] || '';
@@ -107,25 +161,120 @@ function tierToRoman(tier) {
 function buildSuffixName(itemName, suffixTypeName, tier) {
 	let roman = tierToRoman(tier);
 	let name = itemName + ' (' + suffixTypeName;
-	if (roman) name += ' ' + roman;
+	if (roman) {
+		name += ' ' + roman;
+	}
 	return name + ')';
 }
 
-/* ================= BACK ================= */
 function goBack() {
 	location.href = '${pageContext.request.contextPath}/master/suffix-items';
 }
 
-/* ================= CHANGE ITEM ================= */
+function getCurrentFilterQueryString() {
+	const jobFilter = ($('#jobFilter').val() || '').trim();
+	const levelFilter = ($('#levelFilter').val() || '').trim();
+	const rarityFilter = ($('#rarityFilter').val() || '').trim();
+
+	const params = [];
+
+	if (jobFilter !== '') {
+		params.push('jobFilter=' + encodeURIComponent(jobFilter));
+	}
+	if (levelFilter !== '') {
+		params.push('levelFilter=' + encodeURIComponent(levelFilter));
+	}
+	if (rarityFilter !== '') {
+		params.push('rarityFilter=' + encodeURIComponent(rarityFilter));
+	}
+
+	return params.join('&');
+}
+
+function applyItemFilters() {
+
+	const selectedJobId = ($('#jobFilter').val() || '').trim();
+	const selectedLevel = ($('#levelFilter').val() || '').trim();
+	const selectedRarityId = ($('#rarityFilter').val() || '').trim();
+
+	let visibleCount = 0;
+	let selectedStillVisible = false;
+	const selectedItemId = ($('#itemId').val() || '').trim();
+
+	$('#itemId option').each(function(index) {
+
+		if (index === 0) {
+			$(this).prop('hidden', false);
+			$(this).prop('disabled', false);
+			return;
+		}
+
+		const $option = $(this);
+		const jobId = ($option.attr('data-job-id') || '').trim();
+		const level = ($option.attr('data-level') || '').trim();
+		const rarityId = ($option.attr('data-rarity-id') || '').trim();
+
+		let matched = true;
+
+		if (selectedJobId !== '' && jobId !== selectedJobId) {
+			matched = false;
+		}
+		if (selectedLevel !== '' && level !== selectedLevel) {
+			matched = false;
+		}
+		if (selectedRarityId !== '' && rarityId !== selectedRarityId) {
+			matched = false;
+		}
+
+		$option.prop('hidden', !matched);
+		$option.prop('disabled', !matched);
+
+		if (matched) {
+			visibleCount++;
+			if (($option.val() || '').trim() === selectedItemId) {
+				selectedStillVisible = true;
+			}
+		}
+	});
+
+	if (selectedItemId !== '' && !selectedStillVisible) {
+		$('#itemId').val('');
+	}
+
+	if (visibleCount > 0) {
+		$('#itemFilterSummary').text('Matched equipment items: ' + visibleCount);
+	} else {
+		$('#itemFilterSummary').text('No equipment item matched the selected filters');
+	}
+}
+
 $('#itemId').on('change', function () {
-	const itemId = $(this).val();
-	if (!itemId) return;
-	location.href =
-		'${pageContext.request.contextPath}/master/suffix-items/edit?itemId='
-		+ itemId;
+	const itemId = ($(this).val() || '').trim();
+	if (!itemId) {
+		return;
+	}
+
+	const qs = getCurrentFilterQueryString();
+	let url = '${pageContext.request.contextPath}/master/suffix-items/edit?itemId=' + encodeURIComponent(itemId);
+
+	if (qs !== '') {
+		url += '&' + qs;
+	}
+
+	location.href = url;
 });
 
-/* ================= ADD SUFFIX ================= */
+$('#jobFilter, #levelFilter, #rarityFilter').on('change', function () {
+	applyItemFilters();
+});
+
+$('#resetItemFilterBtn').on('click', function() {
+	$('#jobFilter').val('');
+	$('#levelFilter').val('');
+	$('#rarityFilter').val('');
+	applyItemFilters();
+});
+
 $(document).on('click', '.addSuffixBtn', function () {
 
 	const tier = $(this).data('tier');
@@ -155,7 +304,6 @@ $(document).on('click', '.addSuffixBtn', function () {
 	$('#suffixTableBody-tier-' + tier).append(row);
 });
 
-/* ================= CLONE FROM TIER 1 (UI ONLY) ================= */
 $(document).on('click', '.cloneTier1Btn', function () {
 
 	const targetTier = $(this).data('target-tier');
@@ -193,7 +341,6 @@ $(document).on('click', '.cloneTier1Btn', function () {
 	});
 });
 
-/* ================= 🔥 CLONE FROM TIER 1 WITH STATS (SAVE DB) ================= */
 $(document).on('click', '.cloneTier1WithStatsBtn', function () {
 
 	const itemId = $('#itemId').val();
@@ -220,7 +367,6 @@ $(document).on('click', '.cloneTier1WithStatsBtn', function () {
 		+ '&targetTier=' + targetTier;
 });
 
-/* ================= AUTO NAME ================= */
 $(document).on('change', '.suffix-type-select', function () {
 
 	const $row = $(this).closest('tr');
@@ -228,18 +374,18 @@ $(document).on('change', '.suffix-type-select', function () {
 	const itemName = $('#itemId option:selected').data('name');
 	const tier = $row.data('tier');
 
-	if (!suffixTypeName || !itemName) return;
+	if (!suffixTypeName || !itemName) {
+		return;
+	}
 
 	$row.find('.suffix-name')
 		.text(buildSuffixName(itemName, suffixTypeName, tier));
 });
 
-/* ================= CANCEL ================= */
 $(document).on('click', '.cancelSuffixBtn', function () {
 	$(this).closest('tr').remove();
 });
 
-/* ================= SAVE ================= */
 $(document).on('click', '.saveSuffixBtn', function () {
 
 	const row = $(this).closest('tr');
@@ -288,10 +434,11 @@ $(document).on('click', '.saveSuffixBtn', function () {
 	).fail(() => alert('Save error'));
 });
 
-/* ================= DELETE ================= */
 $(document).on('click', '.deleteSuffixBtn', function () {
 
-	if (!confirm('Delete this suffix?')) return;
+	if (!confirm('Delete this suffix?')) {
+		return;
+	}
 
 	const row = $(this).closest('tr');
 	const suffixId = row.data('suffix-id');
@@ -299,11 +446,12 @@ $(document).on('click', '.deleteSuffixBtn', function () {
 	$.post(
 		'${pageContext.request.contextPath}/master/suffix-items/delete',
 		{ id: suffixId },
-		function () { row.remove(); }
+		function () {
+			row.remove();
+		}
 	).fail(() => alert('Delete failed'));
 });
 
-/* ================= STATS ================= */
 $(document).on('click', '.openStatsBtn', function () {
 
 	const suffixItemId = $(this).closest('tr').data('suffix-id');
@@ -315,5 +463,9 @@ $(document).on('click', '.openStatsBtn', function () {
 	location.href =
 		'${pageContext.request.contextPath}/master/suffix-items/stats'
 		+ '?suffixItemId=' + suffixItemId;
+});
+
+$(function() {
+	applyItemFilters();
 });
 </script>

@@ -21,7 +21,7 @@
 			</div>
 
 			<div class="col-md-2">
-				<button class="btn btn-primary w-100">Load Set</button>
+				<button class="btn btn-primary w-100" type="submit">Load Set</button>
 			</div>
 
 			<div class="col-md-6 text-end">
@@ -34,6 +34,7 @@
 
 <c:if test="${not empty originals}">
 	<form method="post"
+		id="cloneSetForm"
 		action="${pageContext.request.contextPath}/master/equipment/clone-set/save">
 
 		<div class="card p-3 mb-3 shadow-sm">
@@ -212,7 +213,7 @@
 			</div>
 
 			<div class="card-footer text-end">
-				<button class="btn btn-success"
+				<button type="submit" class="btn btn-success"
 					onclick="return confirm('Clone all items in this set?');">
 					Clone Set
 				</button>
