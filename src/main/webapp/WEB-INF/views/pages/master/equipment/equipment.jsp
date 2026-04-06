@@ -9,10 +9,10 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 56px;
-		height: 56px;
+		width: 54px;
+		height: 54px;
 		padding: 3px;
-		border: 2px solid #6c757d;
+		border: 5px solid #6c757d;
 		border-radius: 10px;
 		background: #ffffff;
 		box-sizing: border-box;
@@ -23,6 +23,7 @@
 		height: 48px;
 		object-fit: contain;
 		display: block;
+		border-radius: 8px;
 	}
 
 	.rarity-icon-empty {
