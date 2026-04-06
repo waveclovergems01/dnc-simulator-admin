@@ -42,13 +42,9 @@ public class SuffixCloneEquipmentController {
 	private final JobService jobService;
 	private final RarityService rarityService;
 
-	public SuffixCloneEquipmentController(
-			EquipmentItemService equipmentItemService,
-			SuffixItemService suffixItemService,
-			SuffixCloneService suffixCloneService,
-			EquipmentItemService equipmentService,
-			SuffixService suffixService,
-			JobService jobService,
+	public SuffixCloneEquipmentController(EquipmentItemService equipmentItemService,
+			SuffixItemService suffixItemService, SuffixCloneService suffixCloneService,
+			EquipmentItemService equipmentService, SuffixService suffixService, JobService jobService,
 			RarityService rarityService) {
 
 		this.equipmentItemService = equipmentItemService;
@@ -61,17 +57,14 @@ public class SuffixCloneEquipmentController {
 	}
 
 	/*
-	 * =========================================================
-	 * CLONE SUFFIX – SELECT EQUIPMENT
-	 * =========================================================
+	 * ========================================================= CLONE SUFFIX –
+	 * SELECT EQUIPMENT =========================================================
 	 */
 	@GetMapping("/clone-suffix")
-	public String clonePage(
-			@RequestParam(required = false) Long equipmentItemId,
+	public String clonePage(@RequestParam(required = false) Long equipmentItemId,
 			@RequestParam(required = false) Integer sourceJobFilter,
 			@RequestParam(required = false) Integer sourceLevelFilter,
-			@RequestParam(required = false) Integer sourceRarityFilter,
-			Model model) {
+			@RequestParam(required = false) Integer sourceRarityFilter, Model model) {
 
 		List<EquipmentItem> allEquipments = equipmentItemService.getAll();
 
@@ -168,9 +161,9 @@ public class SuffixCloneEquipmentController {
 
 		Map<Integer, String> jobFilterMap = new LinkedHashMap<>();
 		for (Map.Entry<Integer, String> entry : allJobMap.entrySet()) {
-//			if (usedJobIds.contains(entry.getKey())) {
-//				jobFilterMap.put(entry.getKey(), entry.getValue());
-//			}
+			// if (usedJobIds.contains(entry.getKey())) {
+			// jobFilterMap.put(entry.getKey(), entry.getValue());
+			// }
 			jobFilterMap.put(entry.getKey(), entry.getValue());
 		}
 
@@ -190,14 +183,11 @@ public class SuffixCloneEquipmentController {
 	}
 
 	/*
-	 * =========================================================
-	 * CLONE SUFFIX – SAVE
+	 * ========================================================= CLONE SUFFIX – SAVE
 	 * =========================================================
 	 */
 	@PostMapping("/clone-suffix/save")
-	public String cloneSave(
-			@RequestParam Long originalEquipmentItemId,
-			@RequestParam Long newEquipmentItemId,
+	public String cloneSave(@RequestParam Long originalEquipmentItemId, @RequestParam Long newEquipmentItemId,
 			@RequestParam("suffixItemId") List<Long> suffixItemIds) {
 
 		Map<Long, SuffixItem> clones = new LinkedHashMap<>();
@@ -211,11 +201,13 @@ public class SuffixCloneEquipmentController {
 
 			EquipmentItem newEquipmentItem = equipmentService.getById(newEquipmentItemId);
 			SuffixType newSuffixType = suffixService.getSuffixTypeById(original.getSuffixTypeId());
+			
+			String suffixDisplay = formatSuffix(newSuffixType.getSuffixName(), original.getTier());
 
 			SuffixItem clone = new SuffixItem();
 			clone.setId(null);
 			clone.setItemId(newEquipmentItemId);
-			clone.setName(newEquipmentItem.getName() + " (" + newSuffixType.getSuffixName() + ")");
+			clone.setName(newEquipmentItem.getName() + " " + suffixDisplay);
 			clone.setSuffixTypeId(original.getSuffixTypeId());
 			clone.setTier(original.getTier());
 
@@ -283,5 +275,28 @@ public class SuffixCloneEquipmentController {
 		int success = suffixCloneService.cloneEquipment(clones);
 
 		return "redirect:/master/suffix-items?cloned=" + success;
+	}
+
+	public String formatSuffix(String suffixName, int tier) {
+		String roman;
+		switch (tier) {
+		case 1:
+			roman = "";
+			break;
+		case 2:
+			roman = " II";
+			break;
+		case 3:
+			roman = " III";
+			break;
+		case 4:
+			roman = " IV";
+			break;
+		default:
+			roman = "";
+			break;
+		}
+
+		return String.format("(%s%s)", suffixName, roman);
 	}
 }

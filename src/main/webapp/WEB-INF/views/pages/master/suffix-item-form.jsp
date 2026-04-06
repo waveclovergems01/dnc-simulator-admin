@@ -370,7 +370,7 @@ $(document).on('click', '.cloneTier1WithStatsBtn', function () {
 $(document).on('change', '.suffix-type-select', function () {
 
 	const $row = $(this).closest('tr');
-	const suffixTypeName = $(this).find('option:selected').text();
+	const suffixTypeName = $(this).find('option:selected').text().trim();
 	const itemName = $('#itemId option:selected').data('name');
 	const tier = $row.data('tier');
 

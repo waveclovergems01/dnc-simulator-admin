@@ -57,7 +57,7 @@ public class JsonExportController {
 			return;
 		}
 
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
 
 		response.setContentType("application/zip");
 		response.setHeader("Content-Disposition", "attachment; filename=\"json_export.zip\"");
@@ -110,6 +110,13 @@ public class JsonExportController {
 			Set<String> usedEntryNames) throws Exception {
 
 		for (String component : imageComponents) {
+			if ("EQUIPMENT".equalsIgnoreCase(component)) {
+				String basePath = jsonExportConfigService.getConfigValue("JSON", "EXPORT_EQUIPMENT");
+				List<ImageExportItem> items = jsonExportConfigService.getEquipmentImages();
+				writeImageEntries(basePath, items, zipOut, usedEntryNames);
+			}
+
+			
 			if ("PLATE".equalsIgnoreCase(component)) {
 				String basePath = jsonExportConfigService.getConfigValue("JSON", "EXPORT_PLATE");
 				List<ImageExportItem> items = jsonExportConfigService.getPlateImages();

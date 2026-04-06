@@ -69,6 +69,23 @@ public class JsonExportConfigRepositoryImpl implements JsonExportConfigRepositor
 			return null;
 		}
 	}
+	
+	@Override
+	public List<ImageExportItem> getEquipmentImages() {
+
+		String sql = "SELECT item_id, icon_name, icon_mime, icon_blob " + "FROM m_equipment_items "
+				+ "WHERE icon_blob IS NOT NULL " + "AND LENGTH(icon_blob) > 0";
+
+		return jdbcTemplate.query(sql, (rs, i) -> {
+			ImageExportItem item = new ImageExportItem();
+			item.setId(rs.getLong("item_id"));
+			item.setComponent("EQUIPMENT");
+			item.setFileName(rs.getString("icon_name"));
+			item.setMimeType(rs.getString("icon_mime"));
+			item.setFileBlob(rs.getBytes("icon_blob"));
+			return item;
+		});
+	}
 
 	@Override
 	public List<ImageExportItem> getPlateImages() {

@@ -57,6 +57,11 @@ public class JsonExportConfigServiceImpl implements JsonExportConfigService {
 	}
 
 	@Override
+	public List<ImageExportItem> getEquipmentImages() {
+		return jsonExportConfigRepository.getEquipmentImages();
+	}
+	
+	@Override
 	public List<ImageExportItem> getPlateImages() {
 		return jsonExportConfigRepository.getPlateImages();
 	}

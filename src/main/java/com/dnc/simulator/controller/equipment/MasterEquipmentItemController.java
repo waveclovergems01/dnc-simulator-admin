@@ -1,6 +1,5 @@
 package com.dnc.simulator.controller.equipment;
 
-import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;

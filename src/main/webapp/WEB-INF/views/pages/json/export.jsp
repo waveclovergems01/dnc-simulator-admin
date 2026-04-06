@@ -24,8 +24,12 @@
 
 	<div style="margin-bottom: 15px;">
 		<label style="margin-right: 20px;"> <input type="checkbox"
+			name="imageComponents" value="EQUIPMENT" /> Equipment Images
+		</label> 
+		<label style="margin-right: 20px;"> <input type="checkbox"
 			name="imageComponents" value="PLATE" /> Plate Images
-		</label> <label style="margin-right: 20px;"> <input type="checkbox"
+		</label> 
+		<label style="margin-right: 20px;"> <input type="checkbox"
 			name="imageComponents" value="CARD" /> Card Images
 		</label>
 	</div>

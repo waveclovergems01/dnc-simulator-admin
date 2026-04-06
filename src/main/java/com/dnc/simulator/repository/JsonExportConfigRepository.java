@@ -14,6 +14,8 @@ public interface JsonExportConfigRepository {
 	String executeExportSql(String sql);
 
 	String getConfigValue(String code, String name);
+	
+	List<ImageExportItem> getEquipmentImages();
 
 	List<ImageExportItem> getPlateImages();
 
