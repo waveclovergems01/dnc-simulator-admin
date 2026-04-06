@@ -17,7 +17,8 @@
 				}
 
 				if (originalName !== "") {
-					$nameInput.val(prefix + " " + originalName);
+					const last = originalName.trim().split(/\s+/).pop();
+					$nameInput.val(prefix + ' ' + last);
 				} else {
 					$nameInput.val(prefix);
 				}
@@ -182,6 +183,14 @@
 
 		$(document).on("click", ".btn-delete-row", function() {
 			$(this).closest("tr").remove();
+		});
+		
+		$('#globalSetId').on('input', function() {
+			let p = $(this).val();
+			let i = 1;
+			$('.newItemId').each(function() {
+				$(this).val(p + String(i++).padStart(4, '0'));
+			});
 		});
 
 		$("#globalType").on("change", function() {
