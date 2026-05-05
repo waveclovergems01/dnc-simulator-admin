@@ -42,11 +42,6 @@
 					</a></li>
 
 					<li><a
-						class="nav-link ${activeMenu == 'equipment' ? 'active' : ''}"
-						href="${pageContext.request.contextPath}/master/equipment">
-							Equipment Item </a></li>
-
-					<li><a
 						class="nav-link ${activeMenu == 'rarities' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/rarities">
 							Rarity </a></li>
@@ -57,34 +52,43 @@
 							Suffix </a></li>
 
 					<li><a
-						class="nav-link ${activeMenu == 'suffix-items' ? 'active' : ''}"
-						href="${pageContext.request.contextPath}/master/suffix-items">
-							Suffix Items </a></li>
+						class="nav-link ${activeMenu == 'equipment' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/equipment">
+							Equipment Item </a></li>
 
 					<li><a
 						class="nav-link ${activeMenu == 'setBonus' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/set-bonus">
 							Set Bonus </a></li>
-					
+
 					<li><a
-						class="nav-link ${activeMenu == 'plate' ? 'active' : ''}"
-						href="${pageContext.request.contextPath}/master/plate/viewPlate">
-							Plates </a></li>
-							
+						class="nav-link ${activeMenu == 'suffix-items' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/suffix-items">
+							Suffix Items </a></li>
+
 					<li><a
 						class="nav-link ${activeMenu == 'patch' ? 'active' : ''}"
 						href="${pageContext.request.contextPath}/master/patch/viewPatchLevel">
 							Patch </a></li>
 
+					<li><a
+						class="nav-link ${activeMenu == 'plate' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/plate/viewPlate">
+							Plates </a></li>
+
+					<li><a
+						class="nav-link ${activeMenu == 'card' ? 'active' : ''}"
+						href="${pageContext.request.contextPath}/master/card/viewCard">
+							Cards </a></li>
+
 				</ul>
-			</div>
-		</li>
+			</div></li>
 		<!-- Json Data -->
-		<li class="nav-item">
-			<a class="nav-link d-flex justify-content-between align-items-center
+		<li class="nav-item"><a
+			class="nav-link d-flex justify-content-between align-items-center
 		               ${activeMenuGroup == 'json' ? 'active' : ''}"
-				data-bs-toggle="collapse" href="#jsonMenu"> 🗂 JSON Data <span>▾</span>
-			</a>
+			data-bs-toggle="collapse" href="#jsonMenu"> 🗂 JSON Data <span>▾</span>
+		</a>
 
 			<div class="collapse ${activeMenuGroup == 'json' ? 'show' : ''}"
 				id="jsonMenu">
@@ -95,15 +99,14 @@
 						href="${pageContext.request.contextPath}/json/export"> Export
 					</a></li>
 				</ul>
-			</div>
-		</li>
-		
+			</div></li>
+
 		<!-- App -->
-		<li class="nav-item">
-			<a class="nav-link d-flex justify-content-between align-items-center
+		<li class="nav-item"><a
+			class="nav-link d-flex justify-content-between align-items-center
 		               ${activeMenuGroup == 'app' ? 'active' : ''}"
-				data-bs-toggle="collapse" href="#app"> 🗂 App <span>▾</span>
-			</a>
+			data-bs-toggle="collapse" href="#app"> 🗂 App <span>▾</span>
+		</a>
 
 			<div class="collapse ${activeMenuGroup == 'app' ? 'show' : ''}"
 				id="app">
@@ -111,11 +114,10 @@
 
 					<li><a
 						class="nav-link ${activeMenu == 'charfollow' ? 'active' : ''}"
-						href="${pageContext.request.contextPath}/app/charfollow"> Character Follow Active
-					</a></li>
+						href="${pageContext.request.contextPath}/app/charfollow">
+							Character Follow Active </a></li>
 				</ul>
-			</div>
-		</li>
+			</div></li>
 
 		<!-- Users -->
 		<li class="nav-item"><a
